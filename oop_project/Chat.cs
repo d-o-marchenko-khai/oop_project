@@ -11,6 +11,13 @@ namespace oop_project
         public DateTime CreatedAt { get; set; }
         private List<Message> Messages { get; set; } = new List<Message>();
 
+        public Chat(Guid advertisementId, Tuple<Guid, Guid> participantIds)
+        {
+            AdvertisementId = advertisementId;
+            ParticipantIds = participantIds;
+            CreatedAt = DateTime.Now;
+        }
+
         public Message AddMessage(Guid senderId, string text)
         {
             throw new NotImplementedException();

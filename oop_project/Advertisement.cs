@@ -45,5 +45,10 @@ namespace oop_project
         {
             throw new NotImplementedException();
         }
+
+        public bool Promote()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
