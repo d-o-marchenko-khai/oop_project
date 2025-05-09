@@ -4,6 +4,13 @@ namespace oop_project
 {
     public class ExchangeAdvertisement : Advertisement
     {
-        // No additional properties for now
+        public ExchangeAdvertisement(
+            string title,
+            string description,
+            Guid categoryId,
+            Guid ownerId
+        ) : base(title, description, categoryId, ownerId)
+        {
+        }
     }
 }

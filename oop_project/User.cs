@@ -1,63 +1,19 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace oop_project
 {
-    public class User : IAuthenticatable
+    public abstract class User
     {
-        private string _username;
-        private string _password;
-        private string _firstName;
-        private string _lastName;
-        private string _phone;
-
-        public string Username
+        // Views advertisements based on a filter
+        public List<Advertisement> ViewAdvertisements(AdvertisementFilterDto filter)
         {
-            get => _username;
-            set
+            if (filter == null)
             {
-                throw new NotImplementedException();
+                throw new ArgumentNullException(nameof(filter), "Filter cannot be null.");
             }
-        }
 
-        public string Password
-        {
-            get => _password;
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public string FirstName
-        {
-            get => _firstName;
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public string LastName
-        {
-            get => _lastName;
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public string Phone
-        {
-            get => _phone;
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public bool Authenticate(string login, string password)
-        {
-            throw new NotImplementedException();
+            return AdvertisementRepository.FindByFilters(filter);
         }
     }
 }

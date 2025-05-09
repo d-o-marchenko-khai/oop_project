@@ -5,14 +5,25 @@ namespace oop_project
 {
     public class Guest : User
     {
-        public List<Advertisement> ViewAdvertisements(object filter)
+        // Constructor
+        public Guest()
         {
-            throw new NotImplementedException();
         }
 
-        public RegisteredUser Register(object credentials)
+        // Registers a guest as a registered user
+        public RegisteredUser Register(RegisterUserDto dto)
         {
-            throw new NotImplementedException();
+            // Example logic: Create a RegisteredUser using the DTO
+            var registeredUser = new RegisteredUser(
+                dto.Username,
+                dto.Password,
+                dto.FirstName,
+                dto.LastName,
+                dto.Phone
+            );
+
+            RegisteredUserRepository.Add(registeredUser);
+            return registeredUser;
         }
     }
 }
