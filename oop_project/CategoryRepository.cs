@@ -4,12 +4,39 @@ using System.Linq;
 
 namespace oop_project
 {
-    public static class CategoryRepository
+    public interface ICategoryRepository
     {
-        private static readonly List<Category> _categories = new();
+        void Add(Category category);
+        List<Category> GetAll();
+        Category GetById(Guid id);
+        Category GetByName(string name);
+        void Update(Category category);
+        void Delete(Guid id);
+    }
+
+    public class CategoryRepository : ICategoryRepository
+    {
+        private static CategoryRepository _instance;
+        private static readonly object _lock = new();
+        private readonly List<Category> _categories = new();
+
+        // Private constructor to prevent instantiation
+        private CategoryRepository() { }
+
+        // Singleton instance accessor
+        public static CategoryRepository Instance
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    return _instance ??= new CategoryRepository();
+                }
+            }
+        }
 
         // Add a new category
-        public static void Add(Category category)
+        public void Add(Category category)
         {
             if (category == null)
             {
@@ -23,25 +50,25 @@ namespace oop_project
         }
 
         // Get all categories
-        public static List<Category> GetAll()
+        public List<Category> GetAll()
         {
             return _categories;
         }
 
         // Find a category by ID
-        public static Category GetById(Guid id)
+        public Category GetById(Guid id)
         {
             return _categories.FirstOrDefault(c => c.Id == id);
         }
 
         // Find a category by name
-        public static Category GetByName(string name)
+        public Category GetByName(string name)
         {
             return _categories.FirstOrDefault(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
         }
 
         // Update an existing category
-        public static void Update(Category category)
+        public void Update(Category category)
         {
             var existingCategory = GetById(category.Id);
             if (existingCategory == null)
@@ -54,7 +81,7 @@ namespace oop_project
         }
 
         // Delete a category by ID
-        public static void Delete(Guid id)
+        public void Delete(Guid id)
         {
             var category = GetById(id);
             if (category == null)

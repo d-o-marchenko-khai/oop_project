@@ -6,10 +6,23 @@ namespace oop_project
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         private string _name;
+        private readonly ICategoryRepository _categoryRepository;
+        private readonly IAdvertisementRepository _advertisementRepository;
 
-        public Category(string name)
+        public Category(string name, ICategoryRepository categoryRepository, IAdvertisementRepository advertisementRepository)
         {
+            if (categoryRepository == null)
+            {
+                throw new ArgumentNullException(nameof(categoryRepository));
+            }
+            if (advertisementRepository == null)
+            {
+                throw new ArgumentNullException(nameof(advertisementRepository));
+            }
+
             Name = name; // Validation is applied in the property setter
+            _categoryRepository = categoryRepository;
+            _advertisementRepository = advertisementRepository;
         }
 
         public string Name
@@ -25,23 +38,28 @@ namespace oop_project
             }
         }
 
-        public static Category AddCategory(string name)
+        public static Category AddCategory(string name, ICategoryRepository categoryRepository, IAdvertisementRepository advertisementRepository)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
                 throw new ArgumentException("Category name cannot be empty or whitespace.", nameof(name));
             }
 
-            Category c = new Category(name);
+            if (categoryRepository == null)
+            {
+                throw new ArgumentNullException(nameof(categoryRepository));
+            }
 
-            CategoryRepository.Add(c);
+            Category c = new Category(name, categoryRepository, advertisementRepository);
+
+            categoryRepository.Add(c);
 
             return c;
         }
 
         public bool Remove()
         {
-            int count = AdvertisementRepository.GetAll()
+            int count = _advertisementRepository.GetAll()
                 .Where(ad => ad.CategoryId == Id)
                 .ToList()
                 .Count;
@@ -50,7 +68,7 @@ namespace oop_project
                 throw new InvalidOperationException("Cannot delete category with existing advertisements.");
             }
 
-            CategoryRepository.Delete(Id);
+            _categoryRepository.Delete(Id);
             return true;
         }
     }

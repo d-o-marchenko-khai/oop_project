@@ -4,12 +4,39 @@ using System.Linq;
 
 namespace oop_project
 {
-    public static class RegisteredUserRepository
+    public interface IRegisteredUserRepository
     {
-        private readonly static List<RegisteredUser> _users = new();
+        void Add(RegisteredUser user);
+        List<RegisteredUser> GetAll();
+        RegisteredUser GetById(Guid id);
+        RegisteredUser GetByUsername(string username);
+        void Update(RegisteredUser user);
+        void Delete(Guid id);
+    }
+
+    public class RegisteredUserRepository : IRegisteredUserRepository
+    {
+        private static RegisteredUserRepository _instance;
+        private static readonly object _lock = new();
+        private readonly List<RegisteredUser> _users = new();
+
+        // Private constructor to prevent instantiation
+        private RegisteredUserRepository() { }
+
+        // Singleton instance accessor
+        public static RegisteredUserRepository Instance
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    return _instance ??= new RegisteredUserRepository();
+                }
+            }
+        }
 
         // Add a new user
-        public static void Add(RegisteredUser user)
+        public void Add(RegisteredUser user)
         {
             if (user == null)
             {
@@ -23,25 +50,25 @@ namespace oop_project
         }
 
         // Get all users
-        public static List<RegisteredUser> GetAll()
+        public List<RegisteredUser> GetAll()
         {
             return _users;
         }
 
         // Find a user by ID
-        public static RegisteredUser GetById(Guid id)
+        public RegisteredUser GetById(Guid id)
         {
             return _users.FirstOrDefault(user => user.Id == id);
         }
 
         // Find a user by username
-        public static RegisteredUser GetByUsername(string username)
+        public RegisteredUser GetByUsername(string username)
         {
-            return _users.First(user => user.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
+            return _users.FirstOrDefault(user => user.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
         }
 
         // Update an existing user
-        public static void Update(RegisteredUser user)
+        public void Update(RegisteredUser user)
         {
             var existingUser = GetById(user.Id);
             if (existingUser == null)
@@ -58,7 +85,7 @@ namespace oop_project
         }
 
         // Delete a user by ID
-        public static void Delete(Guid id)
+        public void Delete(Guid id)
         {
             var user = GetById(id);
             if (user == null)

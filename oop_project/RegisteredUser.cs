@@ -12,30 +12,44 @@ namespace oop_project
         private string _firstName;
         private string _lastName;
         private string _phone;
+        private readonly IChatRepository _chatRepository;
+        private readonly IRegisteredUserRepository _registeredUserRepository;
+
         public Guid Id { get; set; } = Guid.NewGuid();
 
-        public List<Advertisement> Advertisements {
+        public List<Advertisement> Advertisements
+        {
             get
             {
-                return AdvertisementRepository.GetByUserId(Id);
+                return _advertisementRepository.GetByUserId(Id) ?? new List<Advertisement>();
             }
-            set {}
-        }
-        public List<Chat> Chats {
-            get
-            {
-                return ChatRepository.GetByParticipant(Id);
-            }
-            set {}
+            set { }
         }
 
-        public RegisteredUser(string username, string password, string firstName, string lastName, string phone)
+        public List<Chat> Chats
         {
-            Username = username; // Validation is applied in the property setter
-            Password = password;
-            FirstName = firstName;
-            LastName = lastName;
-            Phone = phone;
+            get
+            {
+                return _chatRepository.GetByParticipant(Id) ?? new List<Chat>();
+            }
+            set { }
+        }
+
+        // Constructor to inject AdvertisementRepository and ChatRepository
+        public RegisteredUser(
+            IAdvertisementRepository advertisementRepository,
+            IChatRepository chatRepository,
+            IRegisteredUserRepository registeredUserRepository,
+            RegisterUserDto dto
+        ) : base(advertisementRepository)
+        {
+            _chatRepository = chatRepository;
+            _registeredUserRepository = registeredUserRepository;
+            Username = dto.Username; // Validation is applied in the property setter
+            Password = dto.Password;
+            FirstName = dto.FirstName;
+            LastName = dto.LastName;
+            Phone = dto.Phone;
         }
 
         public string Username
@@ -126,7 +140,7 @@ namespace oop_project
 
         private bool IsUsernameUnique(string username)
         {
-            return RegisteredUserRepository.GetByUsername(username) == null;
+            return _registeredUserRepository.GetByUsername(username) == null;
         }
 
         public Advertisement CreateAdvertisement(CreateAdvertisementDto dto)
@@ -153,7 +167,7 @@ namespace oop_project
             }
 
             // Add to user's advertisements
-            AdvertisementRepository.Add(advertisement);
+            _advertisementRepository.Add(advertisement);
 
             return advertisement;
         }
@@ -187,14 +201,14 @@ namespace oop_project
         public Chat ContactAdvertisementOwner(Guid advertisementId)
         {
             // Find the advertisement
-            var advertisement = AdvertisementRepository.GetById(advertisementId);
+            var advertisement = _advertisementRepository.GetById(advertisementId);
             if (advertisement == null)
             {
                 throw new InvalidOperationException("Advertisement not found.");
             }
             // Create a new chat with the advertisement owner
             var chat = new Chat(advertisementId, new Tuple<Guid, Guid>(this.Id, advertisement.OwnerId));
-            ChatRepository.Add(chat);
+            _chatRepository.Add(chat);
             return chat;
         }
 
@@ -230,7 +244,7 @@ namespace oop_project
                 throw new InvalidOperationException("Advertisement not found.");
             }
 
-            AdvertisementRepository.Delete(advertisement.Id);
+            _advertisementRepository.Delete(advertisement.Id);
             return true;
         }
     }

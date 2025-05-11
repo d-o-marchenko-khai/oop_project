@@ -5,9 +5,14 @@ namespace oop_project
 {
     public class Guest : User
     {
+        private readonly IChatRepository _chatRepository;
+        private readonly IRegisteredUserRepository _registeredUserRepository;
         // Constructor
-        public Guest()
+        public Guest(IAdvertisementRepository advertisementRepository, IChatRepository chatRepository, IRegisteredUserRepository registeredUserRepository)
+            : base(advertisementRepository)
         {
+            _chatRepository = chatRepository;
+            _registeredUserRepository = registeredUserRepository;
         }
 
         // Registers a guest as a registered user
@@ -15,14 +20,13 @@ namespace oop_project
         {
             // Example logic: Create a RegisteredUser using the DTO
             var registeredUser = new RegisteredUser(
-                dto.Username,
-                dto.Password,
-                dto.FirstName,
-                dto.LastName,
-                dto.Phone
+                _advertisementRepository,
+                _chatRepository,
+                _registeredUserRepository,
+                dto
             );
 
-            RegisteredUserRepository.Add(registeredUser);
+            _registeredUserRepository.Add(registeredUser);
             return registeredUser;
         }
     }

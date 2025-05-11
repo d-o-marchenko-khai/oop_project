@@ -4,12 +4,39 @@ using System.Linq;
 
 namespace oop_project
 {
-    public static class ChatRepository
+    public interface IChatRepository
     {
-        private readonly static List<Chat> _chats = new();
+        void Add(Chat chat);
+        List<Chat> GetAll();
+        Chat GetById(Guid id);
+        List<Chat> GetByParticipant(Guid participantId);
+        void Update(Chat chat);
+        void Delete(Guid id);
+    }
+
+    public class ChatRepository : IChatRepository
+    {
+        private static ChatRepository _instance;
+        private static readonly object _lock = new();
+        private readonly List<Chat> _chats = new();
+
+        // Private constructor to prevent instantiation
+        private ChatRepository() { }
+
+        // Singleton instance accessor
+        public static ChatRepository Instance
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    return _instance ??= new ChatRepository();
+                }
+            }
+        }
 
         // Add a new chat
-        public static void Add(Chat chat)
+        public void Add(Chat chat)
         {
             if (chat == null)
             {
@@ -19,25 +46,25 @@ namespace oop_project
         }
 
         // Get all chats
-        public static List<Chat> GetAll()
+        public List<Chat> GetAll()
         {
             return _chats;
         }
 
         // Find a chat by ID
-        public static Chat GetById(Guid id)
+        public Chat GetById(Guid id)
         {
             return _chats.FirstOrDefault(chat => chat.Id == id);
         }
 
         // Get chats by participant
-        public static List<Chat> GetByParticipant(Guid participantId)
+        public List<Chat> GetByParticipant(Guid participantId)
         {
-            return (List <Chat>)_chats.Where(chat => chat.ParticipantIds.Item1 == participantId || chat.ParticipantIds.Item2 == participantId);
+            return _chats.Where(chat => chat.ParticipantIds.Item1 == participantId || chat.ParticipantIds.Item2 == participantId).ToList();
         }
 
         // Update an existing chat
-        public static void Update(Chat chat)
+        public void Update(Chat chat)
         {
             var existingChat = GetById(chat.Id);
             if (existingChat == null)
@@ -51,7 +78,7 @@ namespace oop_project
         }
 
         // Delete a chat by ID
-        public static void Delete(Guid id)
+        public void Delete(Guid id)
         {
             var chat = GetById(id);
             if (chat == null)

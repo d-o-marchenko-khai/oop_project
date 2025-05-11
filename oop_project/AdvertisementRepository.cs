@@ -4,12 +4,40 @@ using System.Linq;
 
 namespace oop_project
 {
-    public static class AdvertisementRepository
+    public interface IAdvertisementRepository
     {
-        private readonly static List<Advertisement> _advertisements = new();
+        void Add(Advertisement advertisement);
+        List<Advertisement> GetAll();
+        Advertisement GetById(Guid id);
+        List<Advertisement> GetByUserId(Guid userId);
+        List<Advertisement> FindByFilters(AdvertisementFilterDto filter);
+        void Update(Advertisement advertisement);
+        void Delete(Guid id);
+    }
+
+    public class AdvertisementRepository : IAdvertisementRepository
+    {
+        private static AdvertisementRepository _instance;
+        private static readonly object _lock = new();
+        private readonly List<Advertisement> _advertisements = new();
+
+        // Private constructor to prevent instantiation
+        private AdvertisementRepository() { }
+
+        // Singleton instance accessor
+        public static AdvertisementRepository Instance
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    return _instance ??= new AdvertisementRepository();
+                }
+            }
+        }
 
         // Add a new advertisement
-        public static void Add(Advertisement advertisement)
+        public void Add(Advertisement advertisement)
         {
             if (advertisement == null)
             {
@@ -19,25 +47,25 @@ namespace oop_project
         }
 
         // Get all advertisements
-        public static List<Advertisement> GetAll()
+        public List<Advertisement> GetAll()
         {
             return _advertisements;
         }
 
         // Find an advertisement by ID
-        public static Advertisement GetById(Guid id)
+        public Advertisement GetById(Guid id)
         {
             return _advertisements.FirstOrDefault(ad => ad.Id == id);
         }
 
         // Find advertisements by user ID
-        public static List<Advertisement> GetByUserId(Guid userId)
+        public List<Advertisement> GetByUserId(Guid userId)
         {
-            return (List <Advertisement>)_advertisements.Where(ad => ad.OwnerId == userId);
+            return _advertisements.Where(ad => ad.OwnerId == userId).ToList();
         }
 
         // Find advertisements with filters
-        public static List<Advertisement> FindByFilters(AdvertisementFilterDto filter)
+        public List<Advertisement> FindByFilters(AdvertisementFilterDto filter)
         {
             return _advertisements.Where(ad =>
                 (!filter.Type.HasValue || ad.GetType().Name.Contains(filter.Type.ToString())) &&
@@ -52,7 +80,7 @@ namespace oop_project
         }
 
         // Update an existing advertisement
-        public static void Update(Advertisement advertisement)
+        public void Update(Advertisement advertisement)
         {
             var existingAd = GetById(advertisement.Id);
             if (existingAd == null)
@@ -68,7 +96,7 @@ namespace oop_project
         }
 
         // Delete an advertisement by ID
-        public static void Delete(Guid id)
+        public void Delete(Guid id)
         {
             var advertisement = GetById(id);
             if (advertisement == null)
