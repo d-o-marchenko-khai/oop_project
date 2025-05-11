@@ -12,7 +12,6 @@ namespace oop_project.Tests
         public UserTests()
         {
             _mockAdvertisementRepository = new Mock<IAdvertisementRepository>();
-            AdvertisementRepository.Instance = _mockAdvertisementRepository.Object;
         }
 
         [Fact]
@@ -22,22 +21,21 @@ namespace oop_project.Tests
             var filter = new AdvertisementFilterDto
             {
                 Type = AdvertisementType.Selling,
-                CategoryId = Guid.NewGuid(),
                 MinPrice = 100,
                 MaxPrice = 500
             };
 
             var expectedAdvertisements = new List<Advertisement>
             {
-                new MockAdvertisement("Title1", "Description1", Guid.NewGuid(), Guid.NewGuid()),
-                new MockAdvertisement("Title2", "Description2", Guid.NewGuid(), Guid.NewGuid())
+                new Mock<Advertisement>("Title1", "Description1", Guid.NewGuid(), Guid.NewGuid()).Object,
+                new Mock<Advertisement>("Title2", "Description2", Guid.NewGuid(), Guid.NewGuid()).Object
             };
 
             _mockAdvertisementRepository
                 .Setup(repo => repo.FindByFilters(filter))
                 .Returns(expectedAdvertisements);
 
-            var user = new MockUser();
+            var user = new MockUser(_mockAdvertisementRepository.Object);
 
             // Act
             var result = user.ViewAdvertisements(filter);
@@ -50,7 +48,7 @@ namespace oop_project.Tests
         public void ViewAdvertisements_ShouldThrowArgumentNullException_WhenFilterIsNull()
         {
             // Arrange
-            var user = new MockUser();
+            var user = new MockUser(_mockAdvertisementRepository.Object);
 
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() => user.ViewAdvertisements(null));
@@ -58,21 +56,10 @@ namespace oop_project.Tests
 
         private class MockUser : User
         {
-            // Mock implementation of the abstract User class
-        }
-
-        private class MockAdvertisement : Advertisement
-        {
-            public MockAdvertisement(string title, string description, Guid categoryId, Guid ownerId)
-                : base(title, description, categoryId, ownerId)
+            public MockUser(IAdvertisementRepository advertisementRepository) 
+                : base(advertisementRepository)
             {
             }
-
-            public override bool Publish() => true;
-            public override bool Unpublish() => true;
-            public override int CompareTo(Advertisement other) => 0;
-            public override bool Promote() => true;
-            public override Advertisement Update(Advertisement advertisement) => this;
         }
     }
 }
