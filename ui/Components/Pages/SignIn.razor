@@ -1,0 +1,12 @@
+@page "/signin"
+
+<div style="min-height: 100vh; display: flex; align-items: center; justify-content: center;">
+    <MudPaper Class="d-flex flex-column p-8" Style="width: 100%; max-width: 420px;">
+        <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-6">Sign In</MudText>
+        <MudTextField T="string" Label="Login" Variant="Variant.Outlined" Class="mb-4" FullWidth="true" />
+        <MudTextField T="string" Label="Password" Variant="Variant.Outlined" InputType="InputType.Password" Class="mb-6" FullWidth="true" />
+        <MudText Align="Align.Center" Class="mt-4">
+            Don't have an account? <MudLink Href="/signup">Sign Up</MudLink>
+        </MudText>
+    </MudPaper>
+</div> 

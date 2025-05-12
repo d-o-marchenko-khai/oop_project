@@ -1,0 +1,9 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+@ui is a ui blazor project
+@oop_project is a domain logic
+
+@tests_xunit is for unit tests

@@ -10,4 +10,8 @@
     <ProjectReference Include="..\oop_project\oop_project.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="MudBlazor" Version="8.6.0" />
+  </ItemGroup>
+
 </Project>
