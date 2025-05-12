@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "oop_project", "oop_project\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tests_xunit", "tests_xunit\tests_xunit.csproj", "{2CB2D289-5B33-4734-A6CF-630A6AE6E017}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ui", "ui\ui.csproj", "{7BA96369-A188-4BFC-A845-10EEE2A4952D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{2CB2D289-5B33-4734-A6CF-630A6AE6E017}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2CB2D289-5B33-4734-A6CF-630A6AE6E017}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2CB2D289-5B33-4734-A6CF-630A6AE6E017}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7BA96369-A188-4BFC-A845-10EEE2A4952D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7BA96369-A188-4BFC-A845-10EEE2A4952D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7BA96369-A188-4BFC-A845-10EEE2A4952D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7BA96369-A188-4BFC-A845-10EEE2A4952D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
