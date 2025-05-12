@@ -1,12 +1,55 @@
 @page "/signup"
+@using oop_project
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
 
 <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center;">
     <MudPaper Class="d-flex flex-column p-8" Style="width: 100%; max-width: 420px;">
         <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-6">Sign Up</MudText>
-        <MudTextField T="string" Label="Login" Variant="Variant.Outlined" Class="mb-4" FullWidth="true" />
-        <MudTextField T="string" Label="Password" Variant="Variant.Outlined" InputType="InputType.Password" Class="mb-6" FullWidth="true" />
+        <MudTextField @bind-Value="login" T="string" Label="Login" Variant="Variant.Outlined" Class="mb-4" FullWidth="true" />
+        <MudTextField @bind-Value="password" T="string" Label="Password" Variant="Variant.Outlined" InputType="InputType.Password" Class="mb-4" FullWidth="true" />
+        <MudTextField @bind-Value="firstName" T="string" Label="First Name" Variant="Variant.Outlined" Class="mb-4" FullWidth="true" />
+        <MudTextField @bind-Value="lastName" T="string" Label="Last Name" Variant="Variant.Outlined" Class="mb-4" FullWidth="true" />
+        <MudTextField @bind-Value="phone" T="string" Label="Phone" Variant="Variant.Outlined" Class="mb-6" FullWidth="true" />
+        <MudButton OnClick="SignUpUser" Variant="Variant.Filled" Color="Color.Primary" Class="mb-4" FullWidth="true">Sign Up</MudButton>
         <MudText Align="Align.Center" Class="mt-4">
             Have an account? <MudLink Href="/signin">Sign In</MudLink>
         </MudText>
+        @if (!string.IsNullOrEmpty(error))
+        {
+            <MudText Color="Color.Error">@error</MudText>
+        }
     </MudPaper>
-</div> 
+</div>
+
+@code {
+    private string login;
+    private string password;
+    private string firstName;
+    private string lastName;
+    private string phone;
+    private string error;
+
+    private void SignUpUser()
+    {
+        try
+        {
+            var guest = new Guest(AdvertisementRepository.Instance, ChatRepository.Instance, RegisteredUserRepository.Instance);
+            var dto = new RegisterUserDto
+            {
+                Username = login,
+                Password = password,
+                FirstName = firstName,
+                LastName = lastName,
+                Phone = phone
+            };
+            var user = guest.Register(dto);
+            AuthState.CurrentUser = user;
+            Navigation.NavigateTo("/");
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+        }
+    }
+} 

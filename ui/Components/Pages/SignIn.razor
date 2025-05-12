@@ -1,12 +1,43 @@
 @page "/signin"
+@using oop_project
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
 
 <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center;">
     <MudPaper Class="d-flex flex-column p-8" Style="width: 100%; max-width: 420px;">
         <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-6">Sign In</MudText>
-        <MudTextField T="string" Label="Login" Variant="Variant.Outlined" Class="mb-4" FullWidth="true" />
-        <MudTextField T="string" Label="Password" Variant="Variant.Outlined" InputType="InputType.Password" Class="mb-6" FullWidth="true" />
+        <MudTextField @bind-Value="login" T="string" Label="Login" Variant="Variant.Outlined" Class="mb-4" FullWidth="true" />
+        <MudTextField @bind-Value="password" T="string" Label="Password" Variant="Variant.Outlined" InputType="InputType.Password" Class="mb-6" FullWidth="true" />
+        <MudButton OnClick="SignInUser" Variant="Variant.Filled" Color="Color.Primary" Class="mb-4" FullWidth="true" Type="Button">Sign In</MudButton>
         <MudText Align="Align.Center" Class="mt-4">
             Don't have an account? <MudLink Href="/signup">Sign Up</MudLink>
         </MudText>
+        @if (!string.IsNullOrEmpty(error))
+        {
+            <MudText Color="Color.Error">@error</MudText>
+        }
     </MudPaper>
-</div> 
+</div>
+
+
+
+@code {
+    private string login;
+    private string password;
+    private string error;
+
+    private void SignInUser()
+    {
+        var repo = oop_project.RegisteredUserRepository.Instance;
+        var user = repo.GetByUsername(login);
+        if (user != null && user.Authenticate(login, password))
+        {
+            AuthState.CurrentUser = user;
+            Navigation.NavigateTo("/");
+        }
+        else
+        {
+            error = "Invalid login or password.";
+        }
+    }
+} 
