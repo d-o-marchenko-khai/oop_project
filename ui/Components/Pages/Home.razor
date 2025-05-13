@@ -2,13 +2,15 @@
 @using oop_project
 @rendermode InteractiveServer
 
+<MudPopoverProvider />
+
 <PageTitle>Home</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.False" Class="mt-6">
     <!-- Filters -->
     <MudGrid Class="mb-6" Spacing="3" AlignItems="AlignItems.Center">
         <MudItem xs="12" sm="4">
-            <MudSelect @bind-Value="filter.CategoryId" Label="Category" FullWidth="true" T="Guid?">
+            <MudSelect @bind-Value="_categoryId" Label="Category" FullWidth="true" T="Guid?">
                 <MudSelectItem T="Guid?" Value="null">All</MudSelectItem>
                 @foreach (var cat in categories)
                 {
@@ -19,15 +21,15 @@
         <MudItem xs="12" sm="4">
             <MudGrid Spacing="1" AlignItems="AlignItems.Center">
                 <MudItem xs="6">
-                    <MudTextField @bind-Value="filter.MinPrice" Label="Min Price" T="int?" FullWidth="true" />
+                    <MudTextField @bind-Value="_minPrice" Label="Min Price" T="int?" FullWidth="true" />
                 </MudItem>
                 <MudItem xs="6">
-                    <MudTextField @bind-Value="filter.MaxPrice" Label="Max Price" T="int?" FullWidth="true" />
+                    <MudTextField @bind-Value="_maxPrice" Label="Max Price" T="int?" FullWidth="true" />
                 </MudItem>
             </MudGrid>
         </MudItem>
         <MudItem xs="12" sm="4">
-            <MudSelect @bind-Value="filter.Type" Label="Advertisement type" FullWidth="true" T="AdvertisementType?">
+            <MudSelect @bind-Value="_type" Label="Advertisement type" FullWidth="true" T="AdvertisementType?">
                 <MudSelectItem T="AdvertisementType?" Value="null">All</MudSelectItem>
                 @foreach (var type in Enum.GetValues(typeof(AdvertisementType)).Cast<AdvertisementType>())
                 {
@@ -65,11 +67,6 @@
         UpdateAds();
     }
 
-    protected override void OnParametersSet()
-    {
-        UpdateAds();
-    }
-
     private void UpdateAds()
     {
         advertisements = AuthState.CurrentUser.ViewAdvertisements(filter);
@@ -104,8 +101,13 @@
     }
     private int? _maxPrice
     {
-        get => filter.MaxPrice;
-        set { filter.MaxPrice = value; UpdateAds(); }
+        get {
+            return filter.MaxPrice;
+        }
+        set {
+            filter.MaxPrice = value;
+            UpdateAds();
+        }
     }
     private AdvertisementType? _type
     {
