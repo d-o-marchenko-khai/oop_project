@@ -1,7 +1,115 @@
 ﻿@page "/"
+@using oop_project
+@rendermode InteractiveServer
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<MudContainer MaxWidth="MaxWidth.False" Class="mt-6">
+    <!-- Filters -->
+    <MudGrid Class="mb-6" Spacing="3" AlignItems="AlignItems.Center">
+        <MudItem xs="12" sm="4">
+            <MudSelect @bind-Value="filter.CategoryId" Label="Category" FullWidth="true" T="Guid?">
+                <MudSelectItem T="Guid?" Value="null">All</MudSelectItem>
+                @foreach (var cat in categories)
+                {
+                    <MudSelectItem T="Guid?" Value="@cat.Id">@cat.Name</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" sm="4">
+            <MudGrid Spacing="1" AlignItems="AlignItems.Center">
+                <MudItem xs="6">
+                    <MudTextField @bind-Value="filter.MinPrice" Label="Min Price" T="int?" FullWidth="true" />
+                </MudItem>
+                <MudItem xs="6">
+                    <MudTextField @bind-Value="filter.MaxPrice" Label="Max Price" T="int?" FullWidth="true" />
+                </MudItem>
+            </MudGrid>
+        </MudItem>
+        <MudItem xs="12" sm="4">
+            <MudSelect @bind-Value="filter.Type" Label="Advertisement type" FullWidth="true" T="AdvertisementType?">
+                <MudSelectItem T="AdvertisementType?" Value="null">All</MudSelectItem>
+                @foreach (var type in Enum.GetValues(typeof(AdvertisementType)).Cast<AdvertisementType>())
+                {
+                    <MudSelectItem T="AdvertisementType?" Value="@type">@type.ToString()</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+    </MudGrid>
 
-Welcome to your new app.
+    <!-- Advertisement Cards -->
+    <MudGrid Spacing="3">
+        @foreach (var ad in advertisements)
+        {
+            <MudItem xs="12" sm="6" md="4">
+                <MudPaper Class="p-4 d-flex flex-column align-items-center" Style="height: 320px;">
+                    <div style="width: 100%; height: 180px; background: #ddd; display: flex; align-items: center; justify-content: center; border: 1px solid #bbb; margin-bottom: 16px;">
+                        <span style="color: #aaa; font-size: 2rem;">Image</span>
+                    </div>
+                    <MudText Typo="Typo.subtitle1">@ad.Title</MudText>
+                    <MudText Typo="Typo.subtitle2">@GetPrice(ad)</MudText>
+                </MudPaper>
+            </MudItem>
+        }
+    </MudGrid>
+</MudContainer>
+
+@code {
+    private List<Category> categories = new();
+    private AdvertisementFilterDto filter = new();
+    private List<Advertisement> advertisements = new();
+
+    protected override void OnInitialized()
+    {
+        categories = CategoryRepository.Instance.GetAll();
+        UpdateAds();
+    }
+
+    protected override void OnParametersSet()
+    {
+        UpdateAds();
+    }
+
+    private void UpdateAds()
+    {
+        advertisements = AuthState.CurrentUser.ViewAdvertisements(filter);
+    }
+
+    private string GetPrice(Advertisement ad)
+    {
+        if (ad is SellingAdvertisement s)
+            return $"{s.Price} $";
+        if (ad is BuyingAdvertisement b)
+            return $"{b.Price} $";
+        return "-";
+    }
+
+    // React to filter changes
+    private void OnFilterChanged(object value)
+    {
+        UpdateAds();
+        StateHasChanged();
+    }
+
+    // Bind filter changes to update ads in real time
+    private Guid? _categoryId
+    {
+        get => filter.CategoryId;
+        set { filter.CategoryId = value; UpdateAds(); }
+    }
+    private int? _minPrice
+    {
+        get => filter.MinPrice;
+        set { filter.MinPrice = value; UpdateAds(); }
+    }
+    private int? _maxPrice
+    {
+        get => filter.MaxPrice;
+        set { filter.MaxPrice = value; UpdateAds(); }
+    }
+    private AdvertisementType? _type
+    {
+        get => filter.Type;
+        set { filter.Type = value; UpdateAds(); }
+    }
+}
