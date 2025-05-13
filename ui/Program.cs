@@ -1,7 +1,11 @@
 using ui.Components;
 using MudBlazor.Services;
+using oop_project;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Load serialized advertisements
+AdvertisementRepository.Instance.DeserializeAll(FileWriter.ReadString("ads.json"));
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

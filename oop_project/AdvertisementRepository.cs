@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace oop_project
 {
@@ -13,6 +16,10 @@ namespace oop_project
         List<Advertisement> FindByFilters(AdvertisementFilterDto filter);
         void Update(Advertisement advertisement);
         void Delete(Guid id);
+        void SaveToFile(string path);
+        void LoadFromFile(string path);
+        string SerializeAll();
+        void DeserializeAll(string json);
     }
 
     public class AdvertisementRepository : IAdvertisementRepository
@@ -104,6 +111,76 @@ namespace oop_project
                 throw new KeyNotFoundException("Advertisement not found.");
             }
             _advertisements.Remove(advertisement);
+        }
+
+        public void SaveToFile(string path)
+        {
+            using var writer = new StreamWriter(path);
+            foreach (var ad in _advertisements)
+            {
+                string json = ad switch
+                {
+                    SellingAdvertisement s => s.ToJson(),
+                    BuyingAdvertisement b => b.ToJson(),
+                    ExchangeAdvertisement e => e.ToJson(),
+                    _ => null
+                };
+                if (json != null)
+                    writer.WriteLine(json);
+            }
+        }
+
+        public void LoadFromFile(string path)
+        {
+            if (!File.Exists(path)) return;
+            _advertisements.Clear();
+            foreach (var line in File.ReadLines(path))
+            {
+                using var doc = JsonDocument.Parse(line);
+                var type = doc.RootElement.GetProperty("Type").GetString();
+                Advertisement ad = type switch
+                {
+                    "Selling" => SellingAdvertisement.FromJson(line),
+                    "Buying" => BuyingAdvertisement.FromJson(line),
+                    "Exchange" => ExchangeAdvertisement.FromJson(line),
+                    _ => null
+                };
+                if (ad != null)
+                    _advertisements.Add(ad);
+            }
+        }
+
+        public string SerializeAll()
+        {
+            var wrappers = _advertisements.Select<Advertisement, object>(ad => ad switch
+            {
+                SellingAdvertisement s => new { Type = "Selling", Ad = s },
+                BuyingAdvertisement b => new { Type = "Buying", Ad = b },
+                ExchangeAdvertisement e => new { Type = "Exchange", Ad = e },
+                _ => null
+            }).Where(w => w != null).ToList();
+            return JsonSerializer.Serialize(wrappers, new JsonSerializerOptions { WriteIndented = true });
+        }
+
+        public void DeserializeAll(string json)
+        {
+            _advertisements.Clear();
+            if (string.IsNullOrWhiteSpace(json)) return;
+            using var doc = JsonDocument.Parse(json);
+            foreach (var element in doc.RootElement.EnumerateArray())
+            {
+                var type = element.GetProperty("Type").GetString();
+                var adJson = element.GetProperty("Ad").GetRawText();
+                Advertisement ad = type switch
+                {
+                    "Selling" => SellingAdvertisement.FromJson(adJson),
+                    "Buying" => BuyingAdvertisement.FromJson(adJson),
+                    "Exchange" => ExchangeAdvertisement.FromJson(adJson),
+                    _ => null
+                };
+                if (ad != null)
+                    _advertisements.Add(ad);
+            }
         }
     }
 }

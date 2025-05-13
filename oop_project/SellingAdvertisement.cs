@@ -1,4 +1,6 @@
 using System;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace oop_project
 {
@@ -23,6 +25,23 @@ namespace oop_project
                 }
                 _price = value;
             }
+        }
+
+        public string ToJson()
+        {
+            var wrapper = new SellingAdWrapper { Type = "Selling", Ad = this };
+            return JsonSerializer.Serialize(wrapper, new JsonSerializerOptions { WriteIndented = false });
+        }
+
+        public static SellingAdvertisement FromJson(string json)
+        {
+            return JsonSerializer.Deserialize<SellingAdvertisement>(json);
+        }
+
+        private class SellingAdWrapper
+        {
+            public string Type { get; set; }
+            public SellingAdvertisement Ad { get; set; }
         }
     }
 }
