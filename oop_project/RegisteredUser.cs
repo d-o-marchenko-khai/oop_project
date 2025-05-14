@@ -206,6 +206,16 @@ namespace oop_project
             {
                 throw new InvalidOperationException("Advertisement not found.");
             }
+            if (advertisement.OwnerId == this.Id)
+            {
+                throw new InvalidOperationException("Cannot contact yourself.");
+            }
+            // Check if a chat already exists
+            var existingChat = _chatRepository.GetByParticipantsAndAdvetrtisementId(this.Id, advertisement.OwnerId, advertisementId);
+            if (existingChat != null)
+            {
+                return existingChat;
+            }
             // Create a new chat with the advertisement owner
             var chat = new Chat(advertisementId, new Tuple<Guid, Guid>(this.Id, advertisement.OwnerId));
             _chatRepository.Add(chat);

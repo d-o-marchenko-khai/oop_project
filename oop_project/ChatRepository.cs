@@ -12,6 +12,7 @@ namespace oop_project
         List<Chat> GetByParticipant(Guid participantId);
         void Update(Chat chat);
         void Delete(Guid id);
+        Chat GetByParticipantsAndAdvetrtisementId(Guid participant1, Guid participant2, Guid advertisementId);
     }
 
     public class ChatRepository : IChatRepository
@@ -61,6 +62,14 @@ namespace oop_project
         public List<Chat> GetByParticipant(Guid participantId)
         {
             return _chats.Where(chat => chat.ParticipantIds.Item1 == participantId || chat.ParticipantIds.Item2 == participantId).ToList();
+        }
+
+        public Chat GetByParticipantsAndAdvetrtisementId(Guid participant1, Guid participant2, Guid advertisementId)
+        {
+            return _chats.FirstOrDefault(chat =>
+                (chat.ParticipantIds.Item1 == participant1 && chat.ParticipantIds.Item2 == participant2 ||
+                 chat.ParticipantIds.Item1 == participant2 && chat.ParticipantIds.Item2 == participant1) &&
+                chat.AdvertisementId == advertisementId);
         }
 
         // Update an existing chat
