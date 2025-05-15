@@ -170,6 +170,8 @@ namespace oop_project
                     throw new ValidationException("Invalid advertisement type.");
             }
 
+            advertisement.PhotoPaths = dto.PhotoPaths; // Assign PhotoPaths from DTO
+
             // Add to user's advertisements
             _advertisementRepository.Add(advertisement);
 

@@ -1,23 +1,43 @@
 @page "/add-ad"
 @using oop_project
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Hosting
+@using System.IO
 @inject NavigationManager Navigation
+@inject IWebHostEnvironment Environment
 @rendermode InteractiveServer
 
 <MudContainer MaxWidth="MaxWidth.Medium" Class="mt-6 d-flex flex-column align-items-center">
     <MudText Typo="Typo.h5" Class="mb-4">Add New Advertisement</MudText>
     
-    <div style="width: 320px; height: 320px; background: #d3d3d3; display: flex; align-items: center; justify-content: center; border: 1px solid #bbb; margin-bottom: 8px;">
-        <span style="color: #aaa; font-size: 2rem;">No Image</span>
-    </div>
-    
-    <div class="d-flex mb-2" style="gap: 16px; width: 100%; max-width: 320px;">
-        <MudButton Variant="Variant.Outlined" Disabled="true">Previous</MudButton>
-        <MudButton Variant="Variant.Outlined" Disabled="true">Next</MudButton>
-    </div>
+    <!-- Image Display Area -->
+    @if (uploadedImageUrls.Any())
+    {
+        <div style="width: 320px; height: 320px; border: 1px solid #bbb; margin-bottom: 8px; overflow: hidden; display:flex; justify-content:center; align-items:center;">
+            <img src="@(currentPreviewImage ?? uploadedImageUrls.First())" style="max-width: 100%; max-height: 100%; object-fit: contain;" />
+        </div>
+        @if (uploadedImageUrls.Count > 1)
+        {
+            <div class="d-flex mb-2" style="gap: 16px; width: 100%; max-width: 320px;">
+                <MudButton Variant="Variant.Outlined" OnClick="ShowPreviousImage" Disabled="currentPreviewIndex <= 0">Previous</MudButton>
+                <MudButton Variant="Variant.Outlined" OnClick="ShowNextImage" Disabled="currentPreviewIndex >= uploadedImageUrls.Count - 1">Next</MudButton>
+            </div>
+        }
+    }
+    else
+    {
+        <div style="width: 320px; height: 320px; background: #d3d3d3; display: flex; align-items: center; justify-content: center; border: 1px solid #bbb; margin-bottom: 8px;">
+            <span style="color: #aaa; font-size: 2rem;">No Image</span>
+        </div>
+    }
     
     <div class="d-flex flex-column align-items-stretch" style="gap: 16px; width: 100%; max-width: 320px;">
-        <MudButton Variant="Variant.Outlined" Disabled="true">Upload a photo</MudButton>
-        <MudButton Variant="Variant.Outlined" Disabled="true">Remove the photo</MudButton>
+        <InputFile OnChange="HandleFileSelected" multiple accept="image/*" class="mb-2" />
+        
+        @if (uploadedImageUrls.Any())
+        {
+            <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="RemoveAllPhotos">Remove All Photos</MudButton>
+        }
         
         <MudSelect T="AdvertisementType" Label="Advertisement Type" @bind-Value="adType">
             <MudSelectItem T="AdvertisementType" Value="AdvertisementType.Selling">Selling</MudSelectItem>
@@ -44,6 +64,10 @@
     private string price = "";
     private AdvertisementType adType = AdvertisementType.Selling;
     private Guid categoryId = Guid.Empty; // Would be populated from categories
+    private List<string> uploadedImageUrls = new List<string>();
+    private string? currentPreviewImage = null;
+    private int currentPreviewIndex = 0;
+    private long maxFileSize = 1024 * 1024 * 5; // 5 MB
     
     protected override async Task OnInitializedAsync()
     {
@@ -55,6 +79,85 @@
         }
     }
     
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        var selectedFiles = e.GetMultipleFiles(maximumFileCount: 5); // Limit to 5 files for now
+
+        foreach (var file in selectedFiles)
+        {
+            if (file.Size > maxFileSize)
+            {
+                // Handle file size error (e.g., show a message to the user)
+                Console.WriteLine($"File {file.Name} exceeds size limit.");
+                continue;
+            }
+
+            try
+            {
+                var trustedFileNameForDisplay = System.Net.WebUtility.HtmlEncode(file.Name);
+                var uniqueFileName = $"{Guid.NewGuid()}{Path.GetExtension(file.Name)}";
+                var adsImagesDir = Path.Combine(Environment.WebRootPath, "images", "ads");
+                
+                if (!Directory.Exists(adsImagesDir))
+                {
+                    Directory.CreateDirectory(adsImagesDir);
+                }
+
+                var path = Path.Combine(adsImagesDir, uniqueFileName);
+
+                await using FileStream fs = new(path, FileMode.Create);
+                await file.OpenReadStream(maxFileSize).CopyToAsync(fs);
+                
+                var relativePath = $"/images/ads/{uniqueFileName}";
+                uploadedImageUrls.Add(relativePath);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error uploading file {file.Name}: {ex.Message}");
+                // Potentially show an error to the user
+            }
+        }
+        if (uploadedImageUrls.Any())
+        {
+            currentPreviewIndex = 0;
+            currentPreviewImage = uploadedImageUrls.First();
+        }
+        StateHasChanged();
+    }
+
+    private void ShowPreviousImage()
+    {
+        if (currentPreviewIndex > 0)
+        {
+            currentPreviewIndex--;
+            currentPreviewImage = uploadedImageUrls[currentPreviewIndex];
+            StateHasChanged();
+        }
+    }
+
+    private void ShowNextImage()
+    {
+        if (currentPreviewIndex < uploadedImageUrls.Count - 1)
+        {
+            currentPreviewIndex++;
+            currentPreviewImage = uploadedImageUrls[currentPreviewIndex];
+            StateHasChanged();
+        }
+    }
+    
+    private void RemoveAllPhotos()
+    {
+        // Note: This only removes them from the list for the current ad creation.
+        // Actual file deletion from wwwroot would need to be handled if files were already saved
+        // persistently before the ad is fully created, or if this was an edit page.
+        // For "AddAd", if the user navigates away or cancels, these files might remain orphaned.
+        // A cleanup mechanism or temporary storage location might be better for a production app.
+        uploadedImageUrls.Clear();
+        currentPreviewImage = null;
+        currentPreviewIndex = 0;
+        StateHasChanged();
+    }
+
     private void SaveAd()
     {
         if (AuthState.CurrentUser == null || AuthState.CurrentUser is not RegisteredUser user)
@@ -80,7 +183,8 @@
                 Description = description,
                 Type = adType,
                 CategoryId = categoryId,
-                Price = (int)priceValue
+                Price = (int)priceValue,
+                PhotoPaths = uploadedImageUrls
             };
             
             var advertisement = user.CreateAdvertisement(dto);

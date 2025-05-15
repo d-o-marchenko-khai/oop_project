@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
+using System.Collections.Generic;
 
 namespace oop_project
 {
@@ -17,6 +18,7 @@ namespace oop_project
         private string _title;
         private string _description;
         private bool _isPublished;
+        public List<string> PhotoPaths { get; set; } = new List<string>();
 
         public Advertisement(string title, string description, Guid categoryId, Guid ownerId)
         {
@@ -110,6 +112,7 @@ namespace oop_project
             Description = advertisement.Description;
             CategoryId = advertisement.CategoryId;
             OwnerId = advertisement.OwnerId;
+            PhotoPaths = advertisement.PhotoPaths;
             return this;
         }
 

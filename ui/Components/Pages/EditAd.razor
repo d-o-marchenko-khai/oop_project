@@ -1,6 +1,10 @@
 @page "/edit-ad/{Id:guid}"
 @using oop_project
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Hosting
+@using System.IO
 @inject NavigationManager Navigation
+@inject IWebHostEnvironment Environment
 @rendermode InteractiveServer
 
 <MudContainer MaxWidth="MaxWidth.Medium" Class="mt-6 d-flex flex-column align-items-center">
@@ -12,18 +16,17 @@
     }
     else
     {
-        <div style="width: 320px; height: 320px; background: #d3d3d3; display: flex; align-items: center; justify-content: center; border: 1px solid #bbb; margin-bottom: 8px;">
-            <span style="color: #aaa; font-size: 2rem;">No Image</span>
-        </div>
-        
-        <div class="d-flex mb-2" style="gap: 16px; width: 100%; max-width: 320px;">
-            <MudButton Variant="Variant.Outlined" Disabled="true">Previous</MudButton>
-            <MudButton Variant="Variant.Outlined" Disabled="true">Next</MudButton>
-        </div>
-        
-        <div class="d-flex flex-column align-items-stretch" style="gap: 16px; width: 100%; max-width: 320px;">
-            <MudButton Variant="Variant.Outlined" Disabled="true">Upload a photo</MudButton>
-            <MudButton Variant="Variant.Outlined" Disabled="true">Remove the photo</MudButton>
+        <!-- Image Display Area using AdPhotoViewer -->
+        <AdPhotoViewer ImageUrls="@GetCurrentPhotoPaths()" />
+
+        <div class="d-flex flex-column align-items-stretch mt-4" style="gap: 16px; width: 100%; max-width: 320px;">
+            <MudText Typo="Typo.subtitle1">Upload New Photos (replaces existing)</MudText>
+            <InputFile OnChange="HandleFileSelected" multiple accept="image/*" class="mb-2" />
+            
+            @if (newlyUploadedPhotoUrls.Any())
+            {
+                 <MudButton Variant="Variant.Outlined" Color="Color.Warning" OnClick="ClearNewUploads">Clear New Uploads</MudButton>
+            }
             
             <MudTextField @bind-Value="title" Label="Title" />
             
@@ -35,9 +38,9 @@
             <MudTextField @bind-Value="description" Label="Description" Lines="4" />
         </div>
         
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" Style="width: 100%; max-width: 320px; margin-bottom: 8px;" OnClick="SaveAd">Save</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Style="width: 100%; max-width: 320px; margin-top: 16px; margin-bottom: 8px;" OnClick="SaveAd">Save Changes</MudButton>
         <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Style="width: 100%; max-width: 320px; margin-bottom: 8px;" OnClick="PromoteAd">Promote</MudButton>
-        <MudButton Variant="Variant.Outlined" Color="Color.Error" Style="width: 100%; max-width: 320px;" OnClick="DeleteAd">Delete</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Error" Style="width: 100%; max-width: 320px;" OnClick="DeleteAdAndPhotos">Delete Ad & Photos</MudButton>
     }
 </MudContainer>
 
@@ -45,31 +48,32 @@
     [Parameter]
     public Guid Id { get; set; }
     
-    private Advertisement advertisement;
+    private Advertisement? advertisement;
     private string title = "";
     private string description = "";
     private string price = "";
     private AdvertisementType adType;
-    
+
+    // For new photo uploads
+    private List<string> newlyUploadedPhotoUrls = new List<string>();
+    private long maxFileSize = 1024 * 1024 * 5; // 5 MB
+
     protected override async Task OnInitializedAsync()
     {
-        // Check if user is logged in
         if (AuthState.CurrentUser == null || AuthState.CurrentUser is not RegisteredUser user)
         {
             await InvokeAsync(() => Navigation.NavigateTo("/signin"));
             return;
         }
         
-        // Get the advertisement
         advertisement = user.Advertisements.FirstOrDefault(a => a.Id == Id);
         
         if (advertisement == null)
         {
-            Navigation.NavigateTo("/my-ads");
+            Navigation.NavigateTo("/my-ads"); // Or some error page
             return;
         }
         
-        // Set initial values
         title = advertisement.Title;
         description = advertisement.Description;
         
@@ -87,11 +91,71 @@
         {
             adType = AdvertisementType.Exchange;
         }
+        // No need to explicitly load newlyUploadedPhotoUrls here as they are for new files.
+        // Existing photos are in advertisement.PhotoPaths and handled by GetCurrentPhotoPaths()
+    }
+
+    private List<string> GetCurrentPhotoPaths()
+    {
+        // If new photos have been staged, show them. Otherwise, show existing.
+        if (newlyUploadedPhotoUrls.Any())
+        {
+            return newlyUploadedPhotoUrls;
+        }
+        return advertisement?.PhotoPaths ?? new List<string>();
+    }
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        // When new files are selected, we clear previously staged new files 
+        // and also effectively mark that existing photos will be replaced if saved.
+        newlyUploadedPhotoUrls.Clear(); 
+        var selectedFiles = e.GetMultipleFiles(maximumFileCount: 5);
+
+        foreach (var file in selectedFiles)
+        {
+            if (file.Size > maxFileSize)
+            {
+                Console.WriteLine($"File {file.Name} exceeds size limit.");
+                continue; // Skip this file
+            }
+
+            try
+            {
+                var uniqueFileName = $"{Guid.NewGuid()}{Path.GetExtension(file.Name)}";
+                var adsImagesDir = Path.Combine(Environment.WebRootPath, "images", "ads");
+                
+                if (!Directory.Exists(adsImagesDir))
+                {
+                    Directory.CreateDirectory(adsImagesDir);
+                }
+
+                var path = Path.Combine(adsImagesDir, uniqueFileName);
+
+                await using FileStream fs = new(path, FileMode.Create);
+                await file.OpenReadStream(maxFileSize).CopyToAsync(fs);
+                
+                newlyUploadedPhotoUrls.Add($"/images/ads/{uniqueFileName}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error uploading file {file.Name}: {ex.Message}");
+            }
+        }
+        StateHasChanged(); // Re-render to show newly uploaded photos in AdPhotoViewer
     }
     
+    private void ClearNewUploads()
+    {
+        // This method clears any newly staged photos, reverting the preview to existing photos.
+        // It doesn't delete any files from disk at this stage.
+        newlyUploadedPhotoUrls.Clear();
+        StateHasChanged();
+    }
+
     private void SaveAd()
     {
-        if (AuthState.CurrentUser == null || AuthState.CurrentUser is not RegisteredUser user)
+        if (AuthState.CurrentUser == null || AuthState.CurrentUser is not RegisteredUser user || advertisement == null)
         {
             Navigation.NavigateTo("/signin");
             return;
@@ -99,31 +163,42 @@
         
         try
         {
-            // Create a new advertisement object with updated properties
-            // (since we can't directly change the type, we create a new ad with the same ID)
-            var updatedAd = advertisement;
+            // Create a temporary ad object for update to avoid direct modification issues if validation fails.
+            // This is a shallow copy for properties we intend to change.
+            // For complex scenarios, a more robust cloning or mapping would be better.
+            var updatedAd = advertisement; // Start with the existing ad instance.
+
             updatedAd.Title = title;
             updatedAd.Description = description;
-            
-            // Update price if applicable
-            if (updatedAd is SellingAdvertisement s && decimal.TryParse(price, out decimal priceValue))
+
+            // If new photos were uploaded, they replace the old ones.
+            // Otherwise, the existing PhotoPaths remain untouched.
+            if (newlyUploadedPhotoUrls.Any())
             {
-                s.Price = priceValue;
+                // Decision: Do we delete old photos from disk here?
+                // For now, we won't. Old photo paths will be overwritten in the ad's data.
+                // Orphaned files might remain. This could be a future enhancement.
+                updatedAd.PhotoPaths = new List<string>(newlyUploadedPhotoUrls);
             }
-            else if (updatedAd is BuyingAdvertisement b && decimal.TryParse(price, out decimal priceValue2))
+            // If no new photos were uploaded, advertisement.PhotoPaths keeps its existing values.
+
+            if (updatedAd is SellingAdvertisement s && decimal.TryParse(price, out decimal priceSValue))
             {
-                b.Price = priceValue2;
+                s.Price = priceSValue;
+            }
+            else if (updatedAd is BuyingAdvertisement b && decimal.TryParse(price, out decimal priceBValue))
+            {
+                b.Price = priceBValue;
             }
             
-            // Update advertisement
-            user.UpdateAdvertisement(Id, updatedAd);
-            
-            // Navigate back to my advertisements
-            Navigation.NavigateTo("/my-ads");
+            user.UpdateAdvertisement(Id, updatedAd); 
+            newlyUploadedPhotoUrls.Clear(); // Clear the staged uploads after successful save.
+            Navigation.NavigateTo($"/ad/{advertisement.Id}"); // Navigate to view the ad
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error updating advertisement: {ex.Message}");
+            // Show error to user
         }
     }
     
@@ -137,7 +212,6 @@
         try
         {
             user.PromoteAdvertisement(Id);
-            // Show some feedback that promotion was successful
         }
         catch (Exception ex)
         {
@@ -145,22 +219,39 @@
         }
     }
     
-    private void DeleteAd()
+    private void DeleteAdAndPhotos()
     {
-        if (AuthState.CurrentUser == null || AuthState.CurrentUser is not RegisteredUser user)
+        if (AuthState.CurrentUser == null || AuthState.CurrentUser is not RegisteredUser user || advertisement == null)
         {
             return;
         }
         
         try
         {
+            // Delete associated photos from wwwroot
+            if (advertisement.PhotoPaths != null)
+            {
+                foreach (var photoPath in advertisement.PhotoPaths)
+                {
+                    if (!string.IsNullOrWhiteSpace(photoPath))
+                    {
+                        var fullPath = Path.Combine(Environment.WebRootPath, photoPath.TrimStart('/'));
+                        if (File.Exists(fullPath))
+                        {
+                            File.Delete(fullPath);
+                            Console.WriteLine($"Deleted photo: {fullPath}");
+                        }
+                    }
+                }
+            }
+            
             user.DeleteAdvertisement(Id);
-            // Navigate back to my advertisements
             Navigation.NavigateTo("/my-ads");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error deleting advertisement: {ex.Message}");
+            Console.WriteLine($"Error deleting advertisement or photos: {ex.Message}");
+            // Show error to user
         }
     }
 } 

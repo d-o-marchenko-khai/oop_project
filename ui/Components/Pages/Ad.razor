@@ -17,14 +17,6 @@
         ad = allAds.FirstOrDefault(a => a.Id == Id);
     }
 
-    private void GoToAd(int index)
-    {
-        if (index >= 0 && index < allAds.Count)
-        {
-            Navigation.NavigateTo($"/ad/{allAds[index].Id}");
-        }
-    }
-
     private string GetPrice()
     {
         if (ad is SellingAdvertisement s)
@@ -64,14 +56,8 @@
 else
 {
     <MudContainer MaxWidth="MaxWidth.False" Class="mt-6 d-flex flex-column align-items-center">
-        <div style="width: 320px; height: 320px; background: #d3d3d3; display: flex; align-items: center; justify-content: center; border: 1px solid #bbb; margin-bottom: 8px;">
-            <span style="color: #aaa; font-size: 2rem;">Image</span>
-        </div>
-        <div class="d-flex mb-2" style="gap: 16px;">
-            <MudButton Variant="Variant.Outlined" Disabled="@(currentIndex <= 0)" OnClick="@(() => GoToAd(currentIndex - 1))">Previous</MudButton>
-            <MudButton Variant="Variant.Outlined" Disabled="@(currentIndex == -1 || currentIndex >= allAds.Count - 1)" OnClick="@(() => GoToAd(currentIndex + 1))">Next</MudButton>
-        </div>
-        <MudText Typo="Typo.h5">@ad.Title</MudText>
+        <AdPhotoViewer ImageUrls="@ad.PhotoPaths" />
+        <MudText Typo="Typo.h5" Class="mt-2">@ad.Title</MudText>
         <MudText Typo="Typo.h6">@GetPrice()</MudText>
         <MudPaper Class="p-3 mt-2 mb-4" Style="width: 100%; max-width: 320px; min-height: 100px; background: #f8f8f8;">
             <MudText Typo="Typo.body2">@ad.Description</MudText>
