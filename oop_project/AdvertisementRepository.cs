@@ -16,8 +16,6 @@ namespace oop_project
         List<Advertisement> FindByFilters(AdvertisementFilterDto filter);
         void Update(Advertisement advertisement);
         void Delete(Guid id);
-        void SaveToFile(string path);
-        void LoadFromFile(string path);
         string SerializeAll();
         void DeserializeAll(string json);
     }
@@ -111,43 +109,6 @@ namespace oop_project
                 throw new KeyNotFoundException("Advertisement not found.");
             }
             _advertisements.Remove(advertisement);
-        }
-
-        public void SaveToFile(string path)
-        {
-            using var writer = new StreamWriter(path);
-            foreach (var ad in _advertisements)
-            {
-                string json = ad switch
-                {
-                    SellingAdvertisement s => s.ToJson(),
-                    BuyingAdvertisement b => b.ToJson(),
-                    ExchangeAdvertisement e => e.ToJson(),
-                    _ => null
-                };
-                if (json != null)
-                    writer.WriteLine(json);
-            }
-        }
-
-        public void LoadFromFile(string path)
-        {
-            if (!File.Exists(path)) return;
-            _advertisements.Clear();
-            foreach (var line in File.ReadLines(path))
-            {
-                using var doc = JsonDocument.Parse(line);
-                var type = doc.RootElement.GetProperty("Type").GetString();
-                Advertisement ad = type switch
-                {
-                    "Selling" => SellingAdvertisement.FromJson(line),
-                    "Buying" => BuyingAdvertisement.FromJson(line),
-                    "Exchange" => ExchangeAdvertisement.FromJson(line),
-                    _ => null
-                };
-                if (ad != null)
-                    _advertisements.Add(ad);
-            }
         }
 
         public string SerializeAll()

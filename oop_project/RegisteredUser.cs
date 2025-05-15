@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
 using static System.Collections.Specialized.BitVector32;
 
 namespace oop_project
@@ -257,5 +258,68 @@ namespace oop_project
             _advertisementRepository.Delete(advertisement.Id);
             return true;
         }
+
+        public string ToJson()
+        {
+            return JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = false });
+        }
+
+        public static RegisteredUser FromJson(string json)
+        {
+            var jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            
+            try 
+            {
+                // Create a temporary data transfer object to hold the JSON data
+                var userDto = JsonSerializer.Deserialize<RegisteredUserJsonDto>(json, jsonOptions);
+                
+                if (userDto == null)
+                {
+                    throw new InvalidOperationException("Failed to deserialize user data");
+                }
+                
+                // Get the repository instances
+                var adRepository = AdvertisementRepository.Instance;
+                var chatRepository = ChatRepository.Instance;
+                var userRepository = RegisteredUserRepository.Instance;
+                
+                // Create the proper RegisteredUser object with dependencies
+                var registerDto = new RegisterUserDto
+                {
+                    Username = userDto.Username,
+                    Password = userDto.Password,
+                    FirstName = userDto.FirstName,
+                    LastName = userDto.LastName,
+                    Phone = userDto.Phone
+                };
+                
+                var user = new RegisteredUser(adRepository, chatRepository, userRepository, registerDto);
+                
+                // Set the Id from the deserialized value - ensure it's parsed correctly
+                user.Id = userDto.Id;
+                
+                return user;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deserializing user: {ex.Message}");
+                Console.WriteLine($"JSON: {json}");
+                throw;
+            }
+        }
+    }
+    
+    // DTO class specifically for JSON deserialization
+    public class RegisteredUserJsonDto
+    {
+        public Guid Id { get; set; }
+        public string Username { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Password { get; set; }
+        public string Phone { get; set; }
     }
 }

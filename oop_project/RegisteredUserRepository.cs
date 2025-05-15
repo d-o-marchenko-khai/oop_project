@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 
 namespace oop_project
 {
@@ -93,6 +94,24 @@ namespace oop_project
                 throw new KeyNotFoundException("User not found.");
             }
             _users.Remove(user);
+        }
+
+        public string SerializeAll()
+        {
+            return JsonSerializer.Serialize(_users, new JsonSerializerOptions { WriteIndented = true });
+        }
+
+        public void DeserializeAll(string json)
+        {
+            _users.Clear();
+            if (string.IsNullOrWhiteSpace(json)) return;
+            using var doc = JsonDocument.Parse(json);
+            foreach (var element in doc.RootElement.EnumerateArray())
+            {
+                var user = RegisteredUser.FromJson(element.GetRawText());
+                if (user != null)
+                    _users.Add(user);
+            }
         }
     }
 }
