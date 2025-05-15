@@ -1,0 +1,86 @@
+@page "/messages"
+@using oop_project
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<MudText Typo="Typo.h4" Class="mb-4">Your Chats</MudText>
+
+@if (currentUser == null)
+{
+    <MudText Typo="Typo.h6">You need to be logged in to see your messages.</MudText>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => Navigation.NavigateTo("/signin"))" Class="mt-3">Go to Sign In</MudButton>
+}
+else if (!userChats.Any())
+{
+    <MudText Typo="Typo.subtitle1">You have no chats yet.</MudText>
+}
+else
+{
+    <MudList Clickable="true" T="oop_project.Chat">
+        @foreach (var chat in userChats)
+        {
+            var advertisement = AdRepository.GetById(chat.AdvertisementId);
+            Guid otherParticipantId = chat.ParticipantIds.Item1 == currentUser.Id ? chat.ParticipantIds.Item2 : chat.ParticipantIds.Item1;
+            var otherUser = UserRepository.GetById(otherParticipantId);
+            
+            var displayTitle = $"{advertisement?.Title ?? "Ad"}";
+
+            var lastMessage = chat.GetHistory().OrderByDescending(m => m.SentAt).FirstOrDefault();
+            var lastMessageText = lastMessage?.Text ?? "No messages yet.";
+
+            <MudListItem OnClick="@(() => OpenChat(chat.Id))" Class="mb-3" Style="display: block; border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px; cursor: pointer;">
+                <MudText Typo="Typo.subtitle1" Style="font-weight: 500; margin-bottom: 4px;">@displayTitle</MudText>
+                <MudPaper Elevation="0" Class="pa-2" Style="background-color: #eeeeee; border-radius: 4px;">
+                    <MudText Typo="Typo.body2">@lastMessageText</MudText>
+                </MudPaper>
+                @if (lastMessage != null)
+                {
+                    <MudText Typo="Typo.caption" Align="Align.Right" Style="font-size: 0.75rem; color: #757575; margin-top: 4px;">
+                        @lastMessage.SentAt.ToString("g")
+                    </MudText>
+                }
+            </MudListItem>
+        }
+    </MudList>
+}
+
+@code {
+    private RegisteredUser? currentUser;
+    private List<oop_project.Chat> userChats = new();
+
+    // Assuming singleton instances for repositories are available as per project structure
+    private IAdvertisementRepository AdRepository = AdvertisementRepository.Instance;
+    private IRegisteredUserRepository UserRepository = RegisteredUserRepository.Instance;
+
+    protected override void OnInitialized()
+    {
+        var authStateUser = AuthState.CurrentUser; 
+        if (authStateUser is RegisteredUser regUser)
+        {
+            currentUser = regUser;
+            var chatsFromUser = currentUser.Chats; 
+
+            if (chatsFromUser != null && chatsFromUser.Any())
+            {
+                userChats = chatsFromUser.OrderByDescending(c =>
+                {
+                    var history = c.GetHistory();
+                    if (history == null || !history.Any()) return c.CreatedAt;
+
+                    var lastMsg = history.OrderByDescending(m => m.SentAt).FirstOrDefault();
+                    return lastMsg?.SentAt ?? c.CreatedAt;
+                }).ToList();
+            }
+            else
+            {
+                userChats = new List<oop_project.Chat>();
+            }
+        }
+        // If currentUser remains null, the Razor markup will display a message to log in.
+    }
+
+    private void OpenChat(Guid chatId)
+    {
+        Navigation.NavigateTo($"/chat/{chatId}");
+    }
+} 
