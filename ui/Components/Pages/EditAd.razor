@@ -1,0 +1,166 @@
+@page "/edit-ad/{Id:guid}"
+@using oop_project
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-6 d-flex flex-column align-items-center">
+    <MudText Typo="Typo.h5" Class="mb-4">Edit Advertisement</MudText>
+    
+    @if (advertisement == null)
+    {
+        <MudText Typo="Typo.body1">Loading advertisement...</MudText>
+    }
+    else
+    {
+        <div style="width: 320px; height: 320px; background: #d3d3d3; display: flex; align-items: center; justify-content: center; border: 1px solid #bbb; margin-bottom: 8px;">
+            <span style="color: #aaa; font-size: 2rem;">No Image</span>
+        </div>
+        
+        <div class="d-flex mb-2" style="gap: 16px; width: 100%; max-width: 320px;">
+            <MudButton Variant="Variant.Outlined" Disabled="true">Previous</MudButton>
+            <MudButton Variant="Variant.Outlined" Disabled="true">Next</MudButton>
+        </div>
+        
+        <div class="d-flex flex-column align-items-stretch" style="gap: 16px; width: 100%; max-width: 320px;">
+            <MudButton Variant="Variant.Outlined" Disabled="true">Upload a photo</MudButton>
+            <MudButton Variant="Variant.Outlined" Disabled="true">Remove the photo</MudButton>
+            
+            <MudTextField @bind-Value="title" Label="Title" />
+            
+            @if (adType != AdvertisementType.Exchange)
+            {
+                <MudTextField @bind-Value="price" Label="Price" />
+            }
+            
+            <MudTextField @bind-Value="description" Label="Description" Lines="4" />
+        </div>
+        
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Style="width: 100%; max-width: 320px; margin-bottom: 8px;" OnClick="SaveAd">Save</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Style="width: 100%; max-width: 320px; margin-bottom: 8px;" OnClick="PromoteAd">Promote</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Error" Style="width: 100%; max-width: 320px;" OnClick="DeleteAd">Delete</MudButton>
+    }
+</MudContainer>
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+    
+    private Advertisement advertisement;
+    private string title = "";
+    private string description = "";
+    private string price = "";
+    private AdvertisementType adType;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        // Check if user is logged in
+        if (AuthState.CurrentUser == null || AuthState.CurrentUser is not RegisteredUser user)
+        {
+            await InvokeAsync(() => Navigation.NavigateTo("/signin"));
+            return;
+        }
+        
+        // Get the advertisement
+        advertisement = user.Advertisements.FirstOrDefault(a => a.Id == Id);
+        
+        if (advertisement == null)
+        {
+            Navigation.NavigateTo("/my-ads");
+            return;
+        }
+        
+        // Set initial values
+        title = advertisement.Title;
+        description = advertisement.Description;
+        
+        if (advertisement is SellingAdvertisement s)
+        {
+            adType = AdvertisementType.Selling;
+            price = s.Price.ToString();
+        }
+        else if (advertisement is BuyingAdvertisement b)
+        {
+            adType = AdvertisementType.Buying;
+            price = b.Price.ToString();
+        }
+        else
+        {
+            adType = AdvertisementType.Exchange;
+        }
+    }
+    
+    private void SaveAd()
+    {
+        if (AuthState.CurrentUser == null || AuthState.CurrentUser is not RegisteredUser user)
+        {
+            Navigation.NavigateTo("/signin");
+            return;
+        }
+        
+        try
+        {
+            // Create a new advertisement object with updated properties
+            // (since we can't directly change the type, we create a new ad with the same ID)
+            var updatedAd = advertisement;
+            updatedAd.Title = title;
+            updatedAd.Description = description;
+            
+            // Update price if applicable
+            if (updatedAd is SellingAdvertisement s && decimal.TryParse(price, out decimal priceValue))
+            {
+                s.Price = priceValue;
+            }
+            else if (updatedAd is BuyingAdvertisement b && decimal.TryParse(price, out decimal priceValue2))
+            {
+                b.Price = priceValue2;
+            }
+            
+            // Update advertisement
+            user.UpdateAdvertisement(Id, updatedAd);
+            
+            // Navigate back to my advertisements
+            Navigation.NavigateTo("/my-ads");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating advertisement: {ex.Message}");
+        }
+    }
+    
+    private void PromoteAd()
+    {
+        if (AuthState.CurrentUser == null || AuthState.CurrentUser is not RegisteredUser user)
+        {
+            return;
+        }
+        
+        try
+        {
+            user.PromoteAdvertisement(Id);
+            // Show some feedback that promotion was successful
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error promoting advertisement: {ex.Message}");
+        }
+    }
+    
+    private void DeleteAd()
+    {
+        if (AuthState.CurrentUser == null || AuthState.CurrentUser is not RegisteredUser user)
+        {
+            return;
+        }
+        
+        try
+        {
+            user.DeleteAdvertisement(Id);
+            // Navigate back to my advertisements
+            Navigation.NavigateTo("/my-ads");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting advertisement: {ex.Message}");
+        }
+    }
+} 

@@ -1,0 +1,97 @@
+@page "/add-ad"
+@using oop_project
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-6 d-flex flex-column align-items-center">
+    <MudText Typo="Typo.h5" Class="mb-4">Add New Advertisement</MudText>
+    
+    <div style="width: 320px; height: 320px; background: #d3d3d3; display: flex; align-items: center; justify-content: center; border: 1px solid #bbb; margin-bottom: 8px;">
+        <span style="color: #aaa; font-size: 2rem;">No Image</span>
+    </div>
+    
+    <div class="d-flex mb-2" style="gap: 16px; width: 100%; max-width: 320px;">
+        <MudButton Variant="Variant.Outlined" Disabled="true">Previous</MudButton>
+        <MudButton Variant="Variant.Outlined" Disabled="true">Next</MudButton>
+    </div>
+    
+    <div class="d-flex flex-column align-items-stretch" style="gap: 16px; width: 100%; max-width: 320px;">
+        <MudButton Variant="Variant.Outlined" Disabled="true">Upload a photo</MudButton>
+        <MudButton Variant="Variant.Outlined" Disabled="true">Remove the photo</MudButton>
+        
+        <MudSelect T="AdvertisementType" Label="Advertisement Type" @bind-Value="adType">
+            <MudSelectItem T="AdvertisementType" Value="AdvertisementType.Selling">Selling</MudSelectItem>
+            <MudSelectItem T="AdvertisementType" Value="AdvertisementType.Buying">Buying</MudSelectItem>
+            <MudSelectItem T="AdvertisementType" Value="AdvertisementType.Exchange">Exchange</MudSelectItem>
+        </MudSelect>
+        
+        <MudTextField @bind-Value="title" Label="Title" />
+        
+        @if (adType != AdvertisementType.Exchange)
+        {
+            <MudTextField @bind-Value="price" Label="Price" />
+        }
+        
+        <MudTextField @bind-Value="description" Label="Description" Lines="4" />
+    </div>
+    
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" Style="width: 100%; max-width: 320px; margin-bottom: 8px;" OnClick="SaveAd">Save</MudButton>
+</MudContainer>
+
+@code {
+    private string title = "";
+    private string description = "";
+    private string price = "";
+    private AdvertisementType adType = AdvertisementType.Selling;
+    private Guid categoryId = Guid.Empty; // Would be populated from categories
+    
+    protected override async Task OnInitializedAsync()
+    {
+        // Check if user is logged in
+        if (AuthState.CurrentUser == null || AuthState.CurrentUser is not RegisteredUser)
+        {
+            await InvokeAsync(() => Navigation.NavigateTo("/signin"));
+            return;
+        }
+    }
+    
+    private void SaveAd()
+    {
+        if (AuthState.CurrentUser == null || AuthState.CurrentUser is not RegisteredUser user)
+        {
+            return;
+        }
+        
+        try
+        {
+            decimal priceValue = 0;
+            if (adType != AdvertisementType.Exchange)
+            {
+                if (string.IsNullOrWhiteSpace(price) || !decimal.TryParse(price, out priceValue))
+                {
+                    // Show error for invalid price
+                    return;
+                }
+            }
+            
+            var dto = new CreateAdvertisementDto
+            {
+                Title = title,
+                Description = description,
+                Type = adType,
+                CategoryId = categoryId,
+                Price = (int)priceValue
+            };
+            
+            var advertisement = user.CreateAdvertisement(dto);
+            
+            // Navigate to the created ad
+            Navigation.NavigateTo($"/ad/{advertisement.Id}");
+        }
+        catch (Exception ex)
+        {
+            // Handle exception (display error message)
+            Console.WriteLine($"Error creating advertisement: {ex.Message}");
+        }
+    }
+} 

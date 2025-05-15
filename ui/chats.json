@@ -1,11 +1,1 @@
-[
-  {
-    "Id": "e88c6f3d-51c1-458e-9df9-0f306ddba945",
-    "AdvertisementId": "b1a7e1c2-1e2b-4c3d-8e4f-5a6b7c8d9e0f",
-    "ParticipantIds": {
-      "Item1": "b1a7e1c2-1e2b-4c3d-8e4f-5a6b7c8d9e0f",
-      "Item2": "22222222-2222-2222-2222-222222222222"
-    },
-    "CreatedAt": "2025-05-15T21:02:33.5761724+02:00"
-  }
-]
+[]
