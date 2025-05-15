@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 
 namespace oop_project
 {
@@ -53,5 +54,74 @@ namespace oop_project
         {
             return new List<Message>(Messages); // Return a copy to prevent external modification
         }
+
+        public string ToJson()
+        {
+            var chatDto = new ChatJsonDto
+            {
+                Id = this.Id,
+                AdvertisementId = this.AdvertisementId,
+                ParticipantId1 = this.ParticipantIds.Item1,
+                ParticipantId2 = this.ParticipantIds.Item2,
+                CreatedAt = this.CreatedAt,
+                Messages = this.Messages
+            };
+            
+            return JsonSerializer.Serialize(chatDto, new JsonSerializerOptions { WriteIndented = false });
+        }
+
+        public static Chat FromJson(string json)
+        {
+            var jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            
+            try
+            {
+                // Create a temporary data transfer object to hold the JSON data
+                var chatDto = JsonSerializer.Deserialize<ChatJsonDto>(json, jsonOptions);
+                
+                if (chatDto == null)
+                {
+                    throw new InvalidOperationException("Failed to deserialize chat data");
+                }
+                
+                // Create a tuple for participant IDs
+                var participantIds = new Tuple<Guid, Guid>(chatDto.ParticipantId1, chatDto.ParticipantId2);
+                
+                // Create the chat object
+                var chat = new Chat(chatDto.AdvertisementId, participantIds);
+                
+                // Set properties that aren't in constructor
+                chat.Id = chatDto.Id;
+                chat.CreatedAt = chatDto.CreatedAt;
+                
+                // Add messages
+                if (chatDto.Messages != null)
+                {
+                    chat.Messages = chatDto.Messages;
+                }
+                
+                return chat;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deserializing chat: {ex.Message}");
+                Console.WriteLine($"JSON: {json}");
+                throw;
+            }
+        }
+    }
+
+    // DTO class specifically for JSON serialization/deserialization
+    public class ChatJsonDto
+    {
+        public Guid Id { get; set; }
+        public Guid AdvertisementId { get; set; }
+        public Guid ParticipantId1 { get; set; }
+        public Guid ParticipantId2 { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public List<Message> Messages { get; set; } = new List<Message>();
     }
 }

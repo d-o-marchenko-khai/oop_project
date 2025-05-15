@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 
 namespace oop_project
 {
@@ -95,6 +96,35 @@ namespace oop_project
                 throw new KeyNotFoundException("Chat not found.");
             }
             _chats.Remove(chat);
+        }
+
+        public string SerializeAll()
+        {
+            return JsonSerializer.Serialize(_chats, new JsonSerializerOptions { WriteIndented = true });
+        }
+
+        public void DeserializeAll(string json)
+        {
+            _chats.Clear();
+            if (string.IsNullOrWhiteSpace(json)) return;
+            
+            try
+            {
+                using var doc = JsonDocument.Parse(json);
+                foreach (var element in doc.RootElement.EnumerateArray())
+                {
+                    var chat = Chat.FromJson(element.GetRawText());
+                    if (chat != null)
+                        _chats.Add(chat);
+                }
+                Console.WriteLine($"Successfully deserialized {_chats.Count} chats");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deserializing chats: {ex.Message}");
+                Console.WriteLine($"JSON: {json}");
+                throw;
+            }
         }
     }
 }

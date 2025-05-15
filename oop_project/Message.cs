@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json;
 
 namespace oop_project
 {
@@ -46,6 +47,40 @@ namespace oop_project
             SenderId = senderId;
             Text = text; // Validation is applied in the property setter
             SentAt = DateTime.Now;
+        }
+
+        // Default constructor for JSON deserialization
+        public Message() { }
+
+        public string ToJson()
+        {
+            return JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = false });
+        }
+
+        public static Message FromJson(string json)
+        {
+            var jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            
+            try
+            {
+                var message = JsonSerializer.Deserialize<Message>(json, jsonOptions);
+                
+                if (message == null)
+                {
+                    throw new InvalidOperationException("Failed to deserialize message data");
+                }
+                
+                return message;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deserializing message: {ex.Message}");
+                Console.WriteLine($"JSON: {json}");
+                throw;
+            }
         }
     }
 }
