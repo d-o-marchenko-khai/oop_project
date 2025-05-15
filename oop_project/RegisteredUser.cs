@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using static System.Collections.Specialized.BitVector32;
 
 namespace oop_project
@@ -18,6 +19,7 @@ namespace oop_project
 
         public Guid Id { get; set; } = Guid.NewGuid();
 
+        [JsonIgnore]
         public List<Advertisement> Advertisements
         {
             get
@@ -27,6 +29,7 @@ namespace oop_project
             set { }
         }
 
+        [JsonIgnore]
         public List<Chat> Chats
         {
             get
