@@ -27,7 +27,7 @@ namespace oop_project
             }
         }
 
-        public string ToJson()
+        public override string ToJson()
         {
             var wrapper = new SellingAdWrapper { Type = "Selling", Ad = this };
             return JsonSerializer.Serialize(wrapper, new JsonSerializerOptions { WriteIndented = false });

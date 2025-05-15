@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
 
 namespace oop_project
 {
@@ -110,6 +111,11 @@ namespace oop_project
             CategoryId = advertisement.CategoryId;
             OwnerId = advertisement.OwnerId;
             return this;
+        }
+
+        public virtual string ToJson()
+        {
+            return "";
         }
     }
 }
