@@ -100,7 +100,16 @@ namespace oop_project
 
         public string SerializeAll()
         {
-            return JsonSerializer.Serialize(_chats, new JsonSerializerOptions { WriteIndented = true });
+            var chatDtos = _chats.Select(chat => new ChatJsonDto
+            {
+                Id = chat.Id,
+                AdvertisementId = chat.AdvertisementId,
+                ParticipantId1 = chat.ParticipantIds.Item1,
+                ParticipantId2 = chat.ParticipantIds.Item2,
+                CreatedAt = chat.CreatedAt,
+                Messages = chat.GetHistory() // GetHistory() provides the list of messages
+            }).ToList();
+            return JsonSerializer.Serialize(chatDtos, new JsonSerializerOptions { WriteIndented = true });
         }
 
         public void DeserializeAll(string json)

@@ -1,4 +1,6 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@using oop_project
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">ui</a>
     </div>
@@ -10,19 +12,7 @@
     <nav class="flex-column">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
+                <span class="bi bi-home-door-fill-nav-menu" aria-hidden="true"></span> Home
             </NavLink>
         </div>
 
@@ -43,6 +33,28 @@
                 <span class="bi bi-plus-circle-nav-menu" aria-hidden="true"></span> Add advertisement
             </NavLink>
         </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="javascript:void(0);" @onclick="SignOut">
+                <span class="bi bi-box-arrow-right-nav-menu" aria-hidden="true"></span> Sign Out
+            </NavLink>
+        </div>
     </nav>
 </div>
+
+@code {
+    [Inject]
+    private NavigationManager NavigationManager { get; set; }
+
+    private void SignOut()
+    {
+        // Assuming Guest class and repository instances are accessible as per previous AuthState setup
+        AuthState.CurrentUser = new Guest(
+            AdvertisementRepository.Instance,
+            ChatRepository.Instance,
+            RegisteredUserRepository.Instance
+        );
+        NavigationManager.NavigateTo("/signin");
+    }
+}
 

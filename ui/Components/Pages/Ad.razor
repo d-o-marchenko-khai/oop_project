@@ -76,6 +76,9 @@ else
         <MudPaper Class="p-3 mt-2 mb-4" Style="width: 100%; max-width: 320px; min-height: 100px; background: #f8f8f8;">
             <MudText Typo="Typo.body2">@ad.Description</MudText>
         </MudPaper>
-        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Style="width: 100%; max-width: 320px;" OnClick="ContactSeller">Contact seller</MudButton>
+        @if (!(AuthState.CurrentUser is RegisteredUser registeredUser && ad.OwnerId == registeredUser.Id))
+        {
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Style="width: 100%; max-width: 320px;" OnClick="ContactSeller">Contact seller</MudButton>
+        }
     </MudContainer>
 } 
