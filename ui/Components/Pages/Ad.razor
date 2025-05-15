@@ -1,6 +1,7 @@
 @page "/ad/{Id:guid}"
 @using oop_project
 @inject NavigationManager Navigation
+@rendermode InteractiveServer
 
 @code {
     [Parameter]
@@ -32,6 +33,28 @@
             return $"{b.Price} $";
         return "-";
     }
+
+    private void ContactSeller()
+    {
+        if (ad == null) return;
+        if (AuthState.CurrentUser is Guest)
+        {
+            Navigation.NavigateTo("/signin");
+            return;
+        }
+        if (AuthState.CurrentUser is RegisteredUser user)
+        {
+            try
+            {
+                var chat = user.ContactAdvertisementOwner(ad.Id);
+                Navigation.NavigateTo($"/chat/{chat.Id}");
+            }
+            catch (Exception ex)
+            {
+                // Optionally show error to user
+            }
+        }
+    }
 }
 
 @if (ad == null)
@@ -53,6 +76,6 @@ else
         <MudPaper Class="p-3 mt-2 mb-4" Style="width: 100%; max-width: 320px; min-height: 100px; background: #f8f8f8;">
             <MudText Typo="Typo.body2">@ad.Description</MudText>
         </MudPaper>
-        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Style="width: 100%; max-width: 320px;">Contact seller</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Style="width: 100%; max-width: 320px;" OnClick="ContactSeller">Contact seller</MudButton>
     </MudContainer>
 } 
