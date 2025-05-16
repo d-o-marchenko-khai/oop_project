@@ -181,6 +181,10 @@ namespace oop_project.Tests
         public List<Advertisement> FindByFilters(AdvertisementFilterDto filter) => _advertisements;
         public void Update(Advertisement advertisement) { }
         public void Delete(Guid id) => _advertisements.RemoveAll(ad => ad.Id == id);
+        public string SerializeAll() => "";
+        public void DeserializeAll(string json)
+        {
+        }
     }
 
     public class InMemoryChatRepository : IChatRepository
@@ -193,5 +197,9 @@ namespace oop_project.Tests
         public List<Chat> GetByParticipant(Guid participantId) => _chats.Where(chat => chat.ParticipantIds.Item1 == participantId || chat.ParticipantIds.Item2 == participantId).ToList();
         public void Update(Chat chat) { }
         public void Delete(Guid id) => _chats.RemoveAll(chat => chat.Id == id);
+        public Chat GetByParticipantsAndAdvetrtisementId(Guid participant1, Guid participant2, Guid advertisementId)
+        {
+            return _chats.FirstOrDefault(chat => chat.ParticipantIds.Item1 == participant1 && chat.ParticipantIds.Item2 == participant2 && chat.AdvertisementId == advertisementId);
+        }
     }
 }
