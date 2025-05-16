@@ -39,7 +39,6 @@ namespace oop_project
             set { }
         }
 
-        // Constructor to inject AdvertisementRepository and ChatRepository
         public RegisteredUser(
             IAdvertisementRepository advertisementRepository,
             IChatRepository chatRepository,
@@ -49,7 +48,7 @@ namespace oop_project
         {
             _chatRepository = chatRepository;
             _registeredUserRepository = registeredUserRepository;
-            Username = dto.Username; // Validation is applied in the property setter
+            Username = dto.Username;
             Password = dto.Password;
             FirstName = dto.FirstName;
             LastName = dto.LastName;
@@ -151,7 +150,6 @@ namespace oop_project
         {
             Advertisement advertisement;
 
-            // Determine the type of advertisement
             switch (dto.Type)
             {
                 case AdvertisementType.Selling:
@@ -170,9 +168,8 @@ namespace oop_project
                     throw new ValidationException("Invalid advertisement type.");
             }
 
-            advertisement.PhotoPaths = dto.PhotoPaths; // Assign PhotoPaths from DTO
+            advertisement.PhotoPaths = dto.PhotoPaths;
 
-            // Add to user's advertisements
             _advertisementRepository.Add(advertisement);
 
             return advertisement;
@@ -180,33 +177,28 @@ namespace oop_project
 
         public Message SendMessage(Guid chatId, string text)
         {
-            // Find the chat
             var chat = Chats.FirstOrDefault(c => c.Id == chatId);
             if (chat == null)
             {
                 throw new InvalidOperationException("Chat not found or user is not a participant.");
             }
 
-            // Add message
             var message = chat.AddMessage(this.Id, text);
             return message;
         }
 
         public List<Message> GetChatHistory(Guid chatId)
         {
-            // Find the chat
             var chat = Chats.FirstOrDefault(c => c.Id == chatId);
             if (chat == null)
             {
                 throw new InvalidOperationException("Chat not found or user is not a participant.");
             }
-            // Retrieve chat history
             return chat.GetHistory();
         }
 
         public Chat ContactAdvertisementOwner(Guid advertisementId)
         {
-            // Find the advertisement
             var advertisement = _advertisementRepository.GetById(advertisementId);
             if (advertisement == null)
             {
@@ -216,13 +208,11 @@ namespace oop_project
             {
                 throw new InvalidOperationException("Cannot contact yourself.");
             }
-            // Check if a chat already exists
             var existingChat = _chatRepository.GetByParticipantsAndAdvetrtisementId(this.Id, advertisement.OwnerId, advertisementId);
             if (existingChat != null)
             {
                 return existingChat;
             }
-            // Create a new chat with the advertisement owner
             var chat = new Chat(advertisementId, new Tuple<Guid, Guid>(this.Id, advertisement.OwnerId));
             _chatRepository.Add(chat);
             return chat;
@@ -278,7 +268,6 @@ namespace oop_project
             
             try 
             {
-                // Create a temporary data transfer object to hold the JSON data
                 var userDto = JsonSerializer.Deserialize<RegisteredUserJsonDto>(json, jsonOptions);
                 
                 if (userDto == null)
@@ -286,12 +275,10 @@ namespace oop_project
                     throw new InvalidOperationException("Failed to deserialize user data");
                 }
                 
-                // Get the repository instances
                 var adRepository = AdvertisementRepository.Instance;
                 var chatRepository = ChatRepository.Instance;
                 var userRepository = RegisteredUserRepository.Instance;
                 
-                // Create the proper RegisteredUser object with dependencies
                 var registerDto = new RegisterUserDto
                 {
                     Username = userDto.Username,
@@ -303,7 +290,6 @@ namespace oop_project
                 
                 var user = new RegisteredUser(adRepository, chatRepository, userRepository, registerDto);
                 
-                // Set the Id from the deserialized value - ensure it's parsed correctly
                 user.Id = userDto.Id;
                 
                 return user;
@@ -317,7 +303,6 @@ namespace oop_project
         }
     }
     
-    // DTO class specifically for JSON deserialization
     public class RegisteredUserJsonDto
     {
         public Guid Id { get; set; }

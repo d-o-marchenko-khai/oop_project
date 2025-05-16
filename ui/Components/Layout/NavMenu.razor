@@ -48,7 +48,6 @@
 
     private void SignOut()
     {
-        // Assuming Guest class and repository instances are accessible as per previous AuthState setup
         AuthState.CurrentUser = new Guest(
             AdvertisementRepository.Instance,
             ChatRepository.Instance,

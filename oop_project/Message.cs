@@ -25,7 +25,6 @@ namespace oop_project
 
         public DateTime SentAt { get; set; }
 
-        // Constructor
         public Message(Guid chatId, Guid senderId, string text)
         {
             if (chatId == Guid.Empty)
@@ -45,11 +44,10 @@ namespace oop_project
 
             ChatId = chatId;
             SenderId = senderId;
-            Text = text; // Validation is applied in the property setter
+            Text = text;
             SentAt = DateTime.Now;
         }
 
-        // Default constructor for JSON deserialization
         public Message() { }
 
         public string ToJson()

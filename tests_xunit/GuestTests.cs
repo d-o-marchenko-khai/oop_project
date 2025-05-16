@@ -30,7 +30,6 @@ namespace oop_project.Tests
         [Fact]
         public void Register_ShouldAddRegisteredUser_WhenDtoIsValid()
         {
-            // Arrange
             var guest = CreateGuest();
             var dto = new RegisterUserDto
             {
@@ -41,10 +40,8 @@ namespace oop_project.Tests
                 Phone = "1234567890"
             };
 
-            // Act
             var registeredUser = guest.Register(dto);
 
-            // Assert
             _mockRegisteredUserRepository.Verify(repo => repo.Add(It.IsAny<RegisteredUser>()), Times.Once);
             Assert.NotNull(registeredUser);
             Assert.Equal(dto.Username, registeredUser.Username);
@@ -57,18 +54,16 @@ namespace oop_project.Tests
         [Fact]
         public void Register_ShouldThrowException_WhenDtoIsInvalid()
         {
-            // Arrange
             var guest = CreateGuest();
             var dto = new RegisterUserDto
             {
-                Username = "", // Invalid username
+                Username = "",
                 Password = "password1",
                 FirstName = "Test",
                 LastName = "User",
                 Phone = "1234567890"
             };
 
-            // Act & Assert
             Assert.Throws<ValidationException>(() => guest.Register(dto));
         }
     }

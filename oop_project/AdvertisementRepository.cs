@@ -26,10 +26,8 @@ namespace oop_project
         private static readonly object _lock = new();
         private readonly List<Advertisement> _advertisements = new();
 
-        // Private constructor to prevent instantiation
         private AdvertisementRepository() { }
 
-        // Singleton instance accessor
         public static AdvertisementRepository Instance
         {
             get
@@ -41,7 +39,6 @@ namespace oop_project
             }
         }
 
-        // Add a new advertisement
         public void Add(Advertisement advertisement)
         {
             if (advertisement == null)
@@ -51,25 +48,21 @@ namespace oop_project
             _advertisements.Add(advertisement);
         }
 
-        // Get all advertisements
         public List<Advertisement> GetAll()
         {
             return _advertisements;
         }
 
-        // Find an advertisement by ID
         public Advertisement GetById(Guid id)
         {
             return _advertisements.FirstOrDefault(ad => ad.Id == id);
         }
 
-        // Find advertisements by user ID
         public List<Advertisement> GetByUserId(Guid userId)
         {
             return _advertisements.Where(ad => ad.OwnerId == userId).ToList();
         }
 
-        // Find advertisements with filters
         public List<Advertisement> FindByFilters(AdvertisementFilterDto filter)
         {
             return _advertisements.Where(ad =>
@@ -84,7 +77,6 @@ namespace oop_project
             ).ToList();
         }
 
-        // Update an existing advertisement
         public void Update(Advertisement advertisement)
         {
             var existingAd = GetById(advertisement.Id);
@@ -93,14 +85,12 @@ namespace oop_project
                 throw new KeyNotFoundException("Advertisement not found.");
             }
 
-            // Update properties
             existingAd.Title = advertisement.Title;
             existingAd.Description = advertisement.Description;
             existingAd.CategoryId = advertisement.CategoryId;
             existingAd.OwnerId = advertisement.OwnerId;
         }
 
-        // Delete an advertisement by ID
         public void Delete(Guid id)
         {
             var advertisement = GetById(id);

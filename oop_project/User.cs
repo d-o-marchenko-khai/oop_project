@@ -7,13 +7,11 @@ namespace oop_project
     {
         protected readonly IAdvertisementRepository _advertisementRepository;
 
-        // Constructor to inject AdvertisementRepository
         protected User(IAdvertisementRepository advertisementRepository)
         {
             _advertisementRepository = advertisementRepository ?? throw new ArgumentNullException(nameof(advertisementRepository));
         }
 
-        // Views advertisements based on a filter
         public List<Advertisement> ViewAdvertisements(AdvertisementFilterDto filter)
         {
             if (filter == null)

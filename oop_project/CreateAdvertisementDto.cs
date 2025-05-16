@@ -9,7 +9,7 @@ namespace oop_project
         public string Description { get; set; }
         public Guid CategoryId { get; set; }
         public AdvertisementType Type { get; set; }
-        public int Price { get; set; } // Price for Selling and Buying
+        public int Price { get; set; }
         public List<string> PhotoPaths { get; set; } = new List<string>();
     }
 }

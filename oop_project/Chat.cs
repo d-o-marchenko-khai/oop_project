@@ -12,7 +12,6 @@ namespace oop_project
         public DateTime CreatedAt { get; set; }
         private List<Message> Messages { get; set; } = new List<Message>();
 
-        // Constructor
         public Chat(Guid advertisementId, Tuple<Guid, Guid> participantIds)
         {
             if (participantIds == null || participantIds.Item1 == Guid.Empty || participantIds.Item2 == Guid.Empty)
@@ -25,7 +24,6 @@ namespace oop_project
             CreatedAt = DateTime.Now;
         }
 
-        // Adds a message to the chat
         public Message AddMessage(Guid senderId, string text)
         {
             if (senderId == Guid.Empty)
@@ -49,10 +47,9 @@ namespace oop_project
             return message;
         }
 
-        // Retrieves the chat history
         public List<Message> GetHistory()
         {
-            return new List<Message>(Messages); // Return a copy to prevent external modification
+            return new List<Message>(Messages);
         }
 
         public string ToJson()
@@ -79,7 +76,6 @@ namespace oop_project
             
             try
             {
-                // Create a temporary data transfer object to hold the JSON data
                 var chatDto = JsonSerializer.Deserialize<ChatJsonDto>(json, jsonOptions);
                 
                 if (chatDto == null)
@@ -87,17 +83,13 @@ namespace oop_project
                     throw new InvalidOperationException("Failed to deserialize chat data");
                 }
                 
-                // Create a tuple for participant IDs
                 var participantIds = new Tuple<Guid, Guid>(chatDto.ParticipantId1, chatDto.ParticipantId2);
                 
-                // Create the chat object
                 var chat = new Chat(chatDto.AdvertisementId, participantIds);
                 
-                // Set properties that aren't in constructor
                 chat.Id = chatDto.Id;
                 chat.CreatedAt = chatDto.CreatedAt;
                 
-                // Add messages
                 if (chatDto.Messages != null)
                 {
                     chat.Messages = chatDto.Messages;
@@ -114,7 +106,6 @@ namespace oop_project
         }
     }
 
-    // DTO class specifically for JSON serialization/deserialization
     public class ChatJsonDto
     {
         public Guid Id { get; set; }

@@ -17,7 +17,6 @@ namespace oop_project.Tests
         [Fact]
         public void ViewAdvertisements_ShouldReturnFilteredAdvertisements_WhenFilterIsValid()
         {
-            // Arrange
             var filter = new AdvertisementFilterDto
             {
                 Type = AdvertisementType.Selling,
@@ -37,20 +36,16 @@ namespace oop_project.Tests
 
             var user = new MockUser(_mockAdvertisementRepository.Object);
 
-            // Act
             var result = user.ViewAdvertisements(filter);
 
-            // Assert
             Assert.Equal(expectedAdvertisements, result);
         }
 
         [Fact]
         public void ViewAdvertisements_ShouldThrowArgumentNullException_WhenFilterIsNull()
         {
-            // Arrange
             var user = new MockUser(_mockAdvertisementRepository.Object);
 
-            // Act & Assert
             Assert.Throws<ArgumentNullException>(() => user.ViewAdvertisements(null));
         }
 

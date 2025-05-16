@@ -20,13 +20,10 @@ namespace oop_project.Tests
         [Fact]
         public void Constructor_ShouldInitializeProperties_WhenArgumentsAreValid()
         {
-            // Arrange
             var name = "Test Category";
 
-            // Act
             var category = new Category(name, _mockCategoryRepository.Object, _mockAdvertisementRepository.Object);
 
-            // Assert
             Assert.Equal(name, category.Name);
             Assert.NotEqual(Guid.Empty, category.Id);
         }
@@ -34,30 +31,24 @@ namespace oop_project.Tests
         [Fact]
         public void Constructor_ShouldThrowArgumentNullException_WhenRepositoryIsNull()
         {
-            // Act & Assert
             Assert.Throws<ArgumentNullException>(() => new Category("Test Category", null, null));
         }
 
         [Fact]
         public void Name_ShouldThrowArgumentException_WhenNameIsEmpty()
         {
-            // Arrange
             var category = new Category("Valid Name", _mockCategoryRepository.Object, _mockAdvertisementRepository.Object);
 
-            // Act & Assert
             Assert.Throws<ArgumentException>(() => category.Name = "");
         }
 
         [Fact]
         public void AddCategory_ShouldAddCategory_WhenArgumentsAreValid()
         {
-            // Arrange
             var name = "New Category";
 
-            // Act
             var category = Category.AddCategory(name, _mockCategoryRepository.Object, _mockAdvertisementRepository.Object);
 
-            // Assert
             _mockCategoryRepository.Verify(repo => repo.Add(It.IsAny<Category>()), Times.Once);
             Assert.Equal(name, category.Name);
         }
@@ -65,28 +56,23 @@ namespace oop_project.Tests
         [Fact]
         public void AddCategory_ShouldThrowArgumentException_WhenNameIsEmpty()
         {
-            // Act & Assert
             Assert.Throws<ArgumentException>(() => Category.AddCategory("", _mockCategoryRepository.Object, _mockAdvertisementRepository.Object));
         }
 
         [Fact]
         public void AddCategory_ShouldThrowArgumentNullException_WhenRepositoryIsNull()
         {
-            // Act & Assert
             Assert.Throws<ArgumentNullException>(() => Category.AddCategory("Test Category", null, null));
         }
 
         [Fact]
         public void Remove_ShouldDeleteCategory_WhenNoAdvertisementsExist()
         {
-            // Arrange
             var category = new Category("Test Category", _mockCategoryRepository.Object, _mockAdvertisementRepository.Object);
             _mockAdvertisementRepository.Setup(repo => repo.GetAll()).Returns(new List<Advertisement>());
 
-            // Act
             var result = category.Remove();
 
-            // Assert
             _mockCategoryRepository.Verify(repo => repo.Delete(category.Id), Times.Once);
             Assert.True(result);
         }
@@ -94,7 +80,6 @@ namespace oop_project.Tests
         [Fact]
         public void Remove_ShouldThrowInvalidOperationException_WhenAdvertisementsExist()
         {
-            // Arrange
             var category = new Category("Test Category", _mockCategoryRepository.Object, _mockAdvertisementRepository.Object);
             var advertisements = new List<Advertisement>
             {
@@ -102,7 +87,6 @@ namespace oop_project.Tests
             };
             _mockAdvertisementRepository.Setup(repo => repo.GetAll()).Returns(advertisements);
 
-            // Act & Assert
             Assert.Throws<InvalidOperationException>(() => category.Remove());
         }
     }

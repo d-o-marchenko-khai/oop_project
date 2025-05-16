@@ -22,10 +22,8 @@ namespace oop_project
         private static readonly object _lock = new();
         private readonly List<Chat> _chats = new();
 
-        // Private constructor to prevent instantiation
         private ChatRepository() { }
 
-        // Singleton instance accessor
         public static ChatRepository Instance
         {
             get
@@ -37,7 +35,6 @@ namespace oop_project
             }
         }
 
-        // Add a new chat
         public void Add(Chat chat)
         {
             if (chat == null)
@@ -47,19 +44,16 @@ namespace oop_project
             _chats.Add(chat);
         }
 
-        // Get all chats
         public List<Chat> GetAll()
         {
             return _chats;
         }
 
-        // Find a chat by ID
         public Chat GetById(Guid id)
         {
             return _chats.FirstOrDefault(chat => chat.Id == id);
         }
 
-        // Get chats by participant
         public List<Chat> GetByParticipant(Guid participantId)
         {
             return _chats.Where(chat => chat.ParticipantIds.Item1 == participantId || chat.ParticipantIds.Item2 == participantId).ToList();
@@ -73,7 +67,6 @@ namespace oop_project
                 chat.AdvertisementId == advertisementId);
         }
 
-        // Update an existing chat
         public void Update(Chat chat)
         {
             var existingChat = GetById(chat.Id);
@@ -82,12 +75,10 @@ namespace oop_project
                 throw new KeyNotFoundException("Chat not found.");
             }
 
-            // Update properties
             existingChat.ParticipantIds = chat.ParticipantIds;
             existingChat.AdvertisementId = chat.AdvertisementId;
         }
 
-        // Delete a chat by ID
         public void Delete(Guid id)
         {
             var chat = GetById(id);
@@ -107,7 +98,7 @@ namespace oop_project
                 ParticipantId1 = chat.ParticipantIds.Item1,
                 ParticipantId2 = chat.ParticipantIds.Item2,
                 CreatedAt = chat.CreatedAt,
-                Messages = chat.GetHistory() // GetHistory() provides the list of messages
+                Messages = chat.GetHistory()
             }).ToList();
             return JsonSerializer.Serialize(chatDtos, new JsonSerializerOptions { WriteIndented = true });
         }

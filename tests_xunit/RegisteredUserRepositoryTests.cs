@@ -15,54 +15,45 @@ namespace oop_project.Tests
         public RegisteredUserRepositoryTests()
         {
             _repository = RegisteredUserRepository.Instance;
-            _repository.GetAll().Clear(); // Ensure a clean state before each test
+            _repository.GetAll().Clear();
         }
 
         [Fact]
         public void Add_ShouldAddUser_WhenUserIsValid()
         {
-            // Arrange
             var user = CreateTestUser("testuser1");
 
-            // Act
             _repository.Add(user);
 
-            // Assert
             Assert.Contains(user, _repository.GetAll());
         }
 
         [Fact]
         public void Add_ShouldThrowArgumentNullException_WhenUserIsNull()
         {
-            // Act & Assert
             Assert.Throws<ArgumentNullException>(() => _repository.Add(null));
         }
 
         [Fact]
         public void Add_ShouldThrowInvalidOperationException_WhenUsernameAlreadyExists()
         {
-            // Arrange
             var user1 = CreateTestUser("duplicateuser");
             var user2 = CreateTestUser("duplicateuser");
             _repository.Add(user1);
 
-            // Act & Assert
             Assert.Throws<InvalidOperationException>(() => _repository.Add(user2));
         }
 
         [Fact]
         public void GetAll_ShouldReturnAllUsers()
         {
-            // Arrange
             var user1 = CreateTestUser("___user1");
             var user2 = CreateTestUser("___user2");
             _repository.Add(user1);
             _repository.Add(user2);
 
-            // Act
             var users = _repository.GetAll();
 
-            // Assert
             Assert.Equal(2, users.Count);
             Assert.Contains(user1, users);
             Assert.Contains(user2, users);
@@ -71,52 +62,42 @@ namespace oop_project.Tests
         [Fact]
         public void GetById_ShouldReturnUser_WhenIdExists()
         {
-            // Arrange
             var user = CreateTestUser("testuser");
             _repository.Add(user);
 
-            // Act
             var result = _repository.GetById(user.Id);
 
-            // Assert
             Assert.Equal(user, result);
         }
 
         [Fact]
         public void GetById_ShouldReturnNull_WhenIdDoesNotExist()
         {
-            // Act
             var result = _repository.GetById(Guid.NewGuid());
 
-            // Assert
             Assert.Null(result);
         }
 
         [Fact]
         public void GetByUsername_ShouldReturnUser_WhenUsernameExists()
         {
-            // Arrange
             var user = CreateTestUser("existinguser");
             _repository.Add(user);
 
-            // Act
             var result = _repository.GetByUsername("existinguser");
 
-            // Assert
             Assert.Equal(user, result);
         }
 
         [Fact]
         public void GetByUsername_ShouldThrowInvalidOperationException_WhenUsernameDoesNotExist()
         {
-            // Act & Assert
             Assert.Equal(null, _repository.GetByUsername("nonexistentuser"));
         }
 
         [Fact]
         public void Update_ShouldUpdateUser_WhenUserExists()
         {
-            // Arrange
             var user = CreateTestUser("updatableuser");
             _repository.Add(user);
             var updatedUser = new RegisteredUser(
@@ -134,10 +115,8 @@ namespace oop_project.Tests
             )
             { Id = user.Id };
 
-            // Act
             _repository.Update(updatedUser);
 
-            // Assert
             var result = _repository.GetById(user.Id);
             Assert.Equal("updateduser", result.Username);
             Assert.Equal("newpassword1", result.Password);
@@ -149,31 +128,25 @@ namespace oop_project.Tests
         [Fact]
         public void Update_ShouldThrowKeyNotFoundException_WhenUserDoesNotExist()
         {
-            // Arrange
             var user = CreateTestUser("nonexistentuser");
 
-            // Act & Assert
             Assert.Throws<KeyNotFoundException>(() => _repository.Update(user));
         }
 
         [Fact]
         public void Delete_ShouldRemoveUser_WhenIdExists()
         {
-            // Arrange
             var user = CreateTestUser("deletableuser");
             _repository.Add(user);
 
-            // Act
             _repository.Delete(user.Id);
 
-            // Assert
             Assert.DoesNotContain(user, _repository.GetAll());
         }
 
         [Fact]
         public void Delete_ShouldThrowKeyNotFoundException_WhenIdDoesNotExist()
         {
-            // Act & Assert
             Assert.Throws<KeyNotFoundException>(() => _repository.Delete(Guid.NewGuid()));
         }
 
@@ -197,7 +170,6 @@ namespace oop_project.Tests
         }
     }
 
-    // Mock implementations for testing
     public class InMemoryAdvertisementRepository : IAdvertisementRepository
     {
         private readonly List<Advertisement> _advertisements = new();

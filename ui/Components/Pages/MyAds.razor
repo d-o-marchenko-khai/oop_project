@@ -58,7 +58,6 @@
     
     protected override async Task OnInitializedAsync()
     {
-        // Check if user is logged in
         if (AuthState.CurrentUser == null || AuthState.CurrentUser is not RegisteredUser user)
         {
             await InvokeAsync(() => Navigation.NavigateTo("/signin"));
@@ -67,7 +66,6 @@
         
         try
         {
-            // Get user's advertisements
             advertisements = user.Advertisements;
         }
         catch (Exception ex)
@@ -96,7 +94,6 @@
         try
         {
             user.PromoteAdvertisement(adId);
-            // Refresh the page to show updated promotion status
             advertisements = user.Advertisements;
             StateHasChanged();
         }
@@ -116,7 +113,6 @@
         try
         {
             user.DeleteAdvertisement(adId);
-            // Refresh the list after deletion
             advertisements = user.Advertisements;
             StateHasChanged();
         }

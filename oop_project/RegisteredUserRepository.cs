@@ -21,10 +21,8 @@ namespace oop_project
         private static readonly object _lock = new();
         private readonly List<RegisteredUser> _users = new();
 
-        // Private constructor to prevent instantiation
         private RegisteredUserRepository() { }
 
-        // Singleton instance accessor
         public static RegisteredUserRepository Instance
         {
             get
@@ -36,7 +34,6 @@ namespace oop_project
             }
         }
 
-        // Add a new user
         public void Add(RegisteredUser user)
         {
             if (user == null)
@@ -50,25 +47,21 @@ namespace oop_project
             _users.Add(user);
         }
 
-        // Get all users
         public List<RegisteredUser> GetAll()
         {
             return _users;
         }
 
-        // Find a user by ID
         public RegisteredUser GetById(Guid id)
         {
             return _users.FirstOrDefault(user => user.Id == id);
         }
 
-        // Find a user by username
         public RegisteredUser GetByUsername(string username)
         {
             return _users.FirstOrDefault(user => user.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
         }
 
-        // Update an existing user
         public void Update(RegisteredUser user)
         {
             var existingUser = GetById(user.Id);
@@ -77,7 +70,6 @@ namespace oop_project
                 throw new KeyNotFoundException("User not found.");
             }
 
-            // Update properties
             existingUser.Username = user.Username;
             existingUser.Password = user.Password;
             existingUser.FirstName = user.FirstName;
@@ -85,7 +77,6 @@ namespace oop_project
             existingUser.Phone = user.Phone;
         }
 
-        // Delete a user by ID
         public void Delete(Guid id)
         {
             var user = GetById(id);

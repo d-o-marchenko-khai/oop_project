@@ -48,7 +48,6 @@ else
     private RegisteredUser? currentUser;
     private List<oop_project.Chat> userChats = new();
 
-    // Assuming singleton instances for repositories are available as per project structure
     private IAdvertisementRepository AdRepository = AdvertisementRepository.Instance;
     private IRegisteredUserRepository UserRepository = RegisteredUserRepository.Instance;
 
@@ -76,7 +75,6 @@ else
                 userChats = new List<oop_project.Chat>();
             }
         }
-        // If currentUser remains null, the Razor markup will display a message to log in.
     }
 
     private void OpenChat(Guid chatId)

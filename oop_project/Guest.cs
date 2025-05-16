@@ -7,7 +7,7 @@ namespace oop_project
     {
         private readonly IChatRepository _chatRepository;
         private readonly IRegisteredUserRepository _registeredUserRepository;
-        // Constructor
+        
         public Guest(IAdvertisementRepository advertisementRepository, IChatRepository chatRepository, IRegisteredUserRepository registeredUserRepository)
             : base(advertisementRepository)
         {
@@ -15,10 +15,10 @@ namespace oop_project
             _registeredUserRepository = registeredUserRepository;
         }
 
-        // Registers a guest as a registered user
+        
         public RegisteredUser Register(RegisterUserDto dto)
         {
-            // Example logic: Create a RegisteredUser using the DTO
+            
             var registeredUser = new RegisteredUser(
                 _advertisementRepository,
                 _chatRepository,

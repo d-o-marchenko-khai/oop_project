@@ -6,7 +6,6 @@
 <PageTitle>Home</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.False" Class="mt-6">
-    <!-- Filters -->
     <MudGrid Class="mb-6" Spacing="3" AlignItems="AlignItems.Center">
         <MudItem xs="12" sm="4">
             <MudSelect @bind-Value="_categoryId" Label="Category" FullWidth="true" T="Guid?">
@@ -38,7 +37,6 @@
         </MudItem>
     </MudGrid>
 
-    <!-- Advertisement Cards -->
     <MudGrid Spacing="3">
         @foreach (var ad in advertisements)
         {
@@ -89,14 +87,12 @@
         return "-";
     }
 
-    // React to filter changes
     private void OnFilterChanged(object value)
     {
         UpdateAds();
         StateHasChanged();
     }
 
-    // Bind filter changes to update ads in real time
     private Guid? _categoryId
     {
         get => filter.CategoryId;

@@ -10,7 +10,6 @@
 <MudContainer MaxWidth="MaxWidth.Medium" Class="mt-6 d-flex flex-column align-items-center">
     <MudText Typo="Typo.h5" Class="mb-4">Add New Advertisement</MudText>
     
-    <!-- Image Display Area -->
     @if (uploadedImageUrls.Any())
     {
         <div style="width: 320px; height: 320px; border: 1px solid #bbb; margin-bottom: 8px; overflow: hidden; display:flex; justify-content:center; align-items:center;">
@@ -63,15 +62,14 @@
     private string description = "";
     private string price = "";
     private AdvertisementType adType = AdvertisementType.Selling;
-    private Guid categoryId = Guid.Empty; // Would be populated from categories
+    private Guid categoryId = Guid.Empty;
     private List<string> uploadedImageUrls = new List<string>();
     private string? currentPreviewImage = null;
     private int currentPreviewIndex = 0;
-    private long maxFileSize = 1024 * 1024 * 5; // 5 MB
+    private long maxFileSize = 1024 * 1024 * 5;
     
     protected override async Task OnInitializedAsync()
     {
-        // Check if user is logged in
         if (AuthState.CurrentUser == null || AuthState.CurrentUser is not RegisteredUser)
         {
             await InvokeAsync(() => Navigation.NavigateTo("/signin"));
@@ -81,13 +79,12 @@
     
     private async Task HandleFileSelected(InputFileChangeEventArgs e)
     {
-        var selectedFiles = e.GetMultipleFiles(maximumFileCount: 5); // Limit to 5 files for now
+        var selectedFiles = e.GetMultipleFiles(maximumFileCount: 5);
 
         foreach (var file in selectedFiles)
         {
             if (file.Size > maxFileSize)
             {
-                // Handle file size error (e.g., show a message to the user)
                 Console.WriteLine($"File {file.Name} exceeds size limit.");
                 continue;
             }
@@ -114,7 +111,6 @@
             catch (Exception ex)
             {
                 Console.WriteLine($"Error uploading file {file.Name}: {ex.Message}");
-                // Potentially show an error to the user
             }
         }
         if (uploadedImageUrls.Any())
@@ -147,11 +143,6 @@
     
     private void RemoveAllPhotos()
     {
-        // Note: This only removes them from the list for the current ad creation.
-        // Actual file deletion from wwwroot would need to be handled if files were already saved
-        // persistently before the ad is fully created, or if this was an edit page.
-        // For "AddAd", if the user navigates away or cancels, these files might remain orphaned.
-        // A cleanup mechanism or temporary storage location might be better for a production app.
         uploadedImageUrls.Clear();
         currentPreviewImage = null;
         currentPreviewIndex = 0;
@@ -172,7 +163,6 @@
             {
                 if (string.IsNullOrWhiteSpace(price) || !decimal.TryParse(price, out priceValue))
                 {
-                    // Show error for invalid price
                     return;
                 }
             }
@@ -189,12 +179,10 @@
             
             var advertisement = user.CreateAdvertisement(dto);
             
-            // Navigate to the created ad
             Navigation.NavigateTo($"/ad/{advertisement.Id}");
         }
         catch (Exception ex)
         {
-            // Handle exception (display error message)
             Console.WriteLine($"Error creating advertisement: {ex.Message}");
         }
     }

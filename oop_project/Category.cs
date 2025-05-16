@@ -20,7 +20,7 @@ namespace oop_project
                 throw new ArgumentNullException(nameof(advertisementRepository));
             }
 
-            Name = name; // Validation is applied in the property setter
+            Name = name;
             _categoryRepository = categoryRepository;
             _advertisementRepository = advertisementRepository;
         }

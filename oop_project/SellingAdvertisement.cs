@@ -11,7 +11,7 @@ namespace oop_project
         public SellingAdvertisement(string title, string description, Guid categoryId, Guid ownerId, decimal price)
             : base(title, description, categoryId, ownerId)
         {
-            Price = price; // Validation is applied in the property setter
+            Price = price; 
         }
 
         public decimal Price

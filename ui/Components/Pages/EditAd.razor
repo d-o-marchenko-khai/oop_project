@@ -70,7 +70,7 @@
         
         if (advertisement == null)
         {
-            Navigation.NavigateTo("/my-ads"); // Or some error page
+            Navigation.NavigateTo("/my-ads");
             return;
         }
         
@@ -91,13 +91,10 @@
         {
             adType = AdvertisementType.Exchange;
         }
-        // No need to explicitly load newlyUploadedPhotoUrls here as they are for new files.
-        // Existing photos are in advertisement.PhotoPaths and handled by GetCurrentPhotoPaths()
     }
 
     private List<string> GetCurrentPhotoPaths()
     {
-        // If new photos have been staged, show them. Otherwise, show existing.
         if (newlyUploadedPhotoUrls.Any())
         {
             return newlyUploadedPhotoUrls;
@@ -107,8 +104,6 @@
 
     private async Task HandleFileSelected(InputFileChangeEventArgs e)
     {
-        // When new files are selected, we clear previously staged new files 
-        // and also effectively mark that existing photos will be replaced if saved.
         newlyUploadedPhotoUrls.Clear(); 
         var selectedFiles = e.GetMultipleFiles(maximumFileCount: 5);
 
@@ -117,7 +112,7 @@
             if (file.Size > maxFileSize)
             {
                 Console.WriteLine($"File {file.Name} exceeds size limit.");
-                continue; // Skip this file
+                continue;
             }
 
             try
@@ -142,13 +137,11 @@
                 Console.WriteLine($"Error uploading file {file.Name}: {ex.Message}");
             }
         }
-        StateHasChanged(); // Re-render to show newly uploaded photos in AdPhotoViewer
+        StateHasChanged();
     }
     
     private void ClearNewUploads()
     {
-        // This method clears any newly staged photos, reverting the preview to existing photos.
-        // It doesn't delete any files from disk at this stage.
         newlyUploadedPhotoUrls.Clear();
         StateHasChanged();
     }
@@ -163,24 +156,15 @@
         
         try
         {
-            // Create a temporary ad object for update to avoid direct modification issues if validation fails.
-            // This is a shallow copy for properties we intend to change.
-            // For complex scenarios, a more robust cloning or mapping would be better.
-            var updatedAd = advertisement; // Start with the existing ad instance.
+            var updatedAd = advertisement;
 
             updatedAd.Title = title;
             updatedAd.Description = description;
 
-            // If new photos were uploaded, they replace the old ones.
-            // Otherwise, the existing PhotoPaths remain untouched.
             if (newlyUploadedPhotoUrls.Any())
             {
-                // Decision: Do we delete old photos from disk here?
-                // For now, we won't. Old photo paths will be overwritten in the ad's data.
-                // Orphaned files might remain. This could be a future enhancement.
                 updatedAd.PhotoPaths = new List<string>(newlyUploadedPhotoUrls);
             }
-            // If no new photos were uploaded, advertisement.PhotoPaths keeps its existing values.
 
             if (updatedAd is SellingAdvertisement s && decimal.TryParse(price, out decimal priceSValue))
             {
@@ -192,13 +176,12 @@
             }
             
             user.UpdateAdvertisement(Id, updatedAd); 
-            newlyUploadedPhotoUrls.Clear(); // Clear the staged uploads after successful save.
-            Navigation.NavigateTo($"/ad/{advertisement.Id}"); // Navigate to view the ad
+            newlyUploadedPhotoUrls.Clear();
+            Navigation.NavigateTo($"/ad/{advertisement.Id}");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error updating advertisement: {ex.Message}");
-            // Show error to user
         }
     }
     
@@ -228,7 +211,6 @@
         
         try
         {
-            // Delete associated photos from wwwroot
             if (advertisement.PhotoPaths != null)
             {
                 foreach (var photoPath in advertisement.PhotoPaths)
@@ -251,7 +233,6 @@
         catch (Exception ex)
         {
             Console.WriteLine($"Error deleting advertisement or photos: {ex.Message}");
-            // Show error to user
         }
     }
 } 

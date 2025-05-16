@@ -22,7 +22,7 @@ namespace oop_project
 
         public Advertisement(string title, string description, Guid categoryId, Guid ownerId)
         {
-            Title = title; // Validation is applied in the property setter
+            Title = title; 
             Description = description;
             CategoryId = categoryId;
             OwnerId = ownerId;
@@ -68,7 +68,7 @@ namespace oop_project
         {
             if (CreatedAt > DateTime.Now)
             {
-                return false; // Cannot publish if CreatedAt is in the future
+                return false; 
             }
 
             _isPublished = true;
@@ -79,7 +79,7 @@ namespace oop_project
         {
             if (!_isPublished)
             {
-                return false; // Cannot unpublish if not already published
+                return false; 
             }
 
             _isPublished = false;
@@ -96,9 +96,9 @@ namespace oop_project
         {
             if ((DateTime.Now - this.CreatedAt).TotalHours < 24)
             {
-                return false; // Too early to promote
+                return false; 
             }
-            this.CreatedAt = DateTime.Now; // Update promotion timestamp
+            this.CreatedAt = DateTime.Now; 
             return true;
         }
 

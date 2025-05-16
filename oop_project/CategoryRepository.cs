@@ -20,10 +20,8 @@ namespace oop_project
         private static readonly object _lock = new();
         private readonly List<Category> _categories = new();
 
-        // Private constructor to prevent instantiation
         private CategoryRepository() { }
 
-        // Singleton instance accessor
         public static CategoryRepository Instance
         {
             get
@@ -35,7 +33,6 @@ namespace oop_project
             }
         }
 
-        // Add a new category
         public void Add(Category category)
         {
             if (category == null)
@@ -49,25 +46,21 @@ namespace oop_project
             _categories.Add(category);
         }
 
-        // Get all categories
         public List<Category> GetAll()
         {
             return _categories;
         }
 
-        // Find a category by ID
         public Category GetById(Guid id)
         {
             return _categories.FirstOrDefault(c => c.Id == id);
         }
 
-        // Find a category by name
         public Category GetByName(string name)
         {
             return _categories.FirstOrDefault(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
         }
 
-        // Update an existing category
         public void Update(Category category)
         {
             var existingCategory = GetById(category.Id);
@@ -76,11 +69,9 @@ namespace oop_project
                 throw new KeyNotFoundException("Category not found.");
             }
 
-            // Update properties
             existingCategory.Name = category.Name;
         }
 
-        // Delete a category by ID
         public void Delete(Guid id)
         {
             var category = GetById(id);
