@@ -65,16 +65,34 @@ namespace oop_project
 
         public List<Advertisement> FindByFilters(AdvertisementFilterDto filter)
         {
-            return _advertisements.Where(ad =>
-                (!filter.Type.HasValue || ad.GetType().Name.Contains(filter.Type.ToString())) &&
-                (!filter.CategoryId.HasValue || ad.CategoryId == filter.CategoryId) &&
-                (!filter.MinPrice.HasValue ||
-                    ((ad is SellingAdvertisement sellingAd && sellingAd.Price >= filter.MinPrice) ||
-                     (ad is BuyingAdvertisement buyingAd && buyingAd.Price >= filter.MinPrice))) &&
-                (!filter.MaxPrice.HasValue ||
-                    ((ad is SellingAdvertisement sellingAd2 && sellingAd2.Price <= filter.MaxPrice) ||
-                     (ad is BuyingAdvertisement buyingAd2 && buyingAd2.Price <= filter.MaxPrice)))
-            ).ToList();
+            IEnumerable<Advertisement> query = _advertisements;
+
+            if (filter.Type.HasValue)
+            {
+                string typeString = filter.Type.ToString();
+                query = query.Where(ad => ad.GetType().Name.Contains(typeString));
+            }
+
+            if (filter.CategoryId.HasValue)
+            {
+                query = query.Where(ad => ad.CategoryId == filter.CategoryId.Value);
+            }
+
+            if (filter.MinPrice.HasValue)
+            {
+                query = query.Where(ad =>
+                    (ad is SellingAdvertisement sellingAd && sellingAd.Price >= filter.MinPrice.Value) ||
+                    (ad is BuyingAdvertisement buyingAd && buyingAd.Price >= filter.MinPrice.Value));
+            }
+
+            if (filter.MaxPrice.HasValue)
+            {
+                query = query.Where(ad =>
+                    (ad is SellingAdvertisement sellingAd && sellingAd.Price <= filter.MaxPrice.Value) ||
+                    (ad is BuyingAdvertisement buyingAd && buyingAd.Price <= filter.MaxPrice.Value));
+            }
+
+            return query.ToList();
         }
 
         public void Update(Advertisement advertisement)
