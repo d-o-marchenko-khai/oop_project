@@ -7,6 +7,8 @@ using System.Text.Json.Serialization;
 
 namespace oop_project
 {
+ 
+    
     public interface IAdvertisementRepository
     {
         void Add(Advertisement advertisement);
